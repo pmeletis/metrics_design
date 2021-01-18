@@ -1,0 +1,73 @@
+version: 1.0
+comments:
+  - FOllowing needs to be updated...
+  - PASCAL Panoptic Parts 74 parts classes + 1 background
+  - This is our official grouping for the 198 (363 distinct) annotated parts of PASCAL-Part dataset to 74 part-level classes (194 + 4 parts in total)
+  - part-level classes are defined on the 20 scene-level semantic classes of PASCAL VOC
+  - 70 parts come from 16 scene-level semantic classes and 4 parts from the rest 4 classes that are not annotated on part-level (or equivalently they have one part)
+  - 1 background class is also defined
+
+# General preprocessing step
+
+engine: [10, 11, 12, 13, ...]
+
+
+
+# general dataset description: sids_pids
+
+general_dict: {
+  void: [],
+  person: [
+    head,
+    lower arm,
+    upper arm,
+    ...
+  ],
+  tree: [],
+  aeroplane: [
+    engine,
+  ],
+}
+
+# this is used for evaluation only
+# Our official benchmark: PPP-100-75
+l_things: [chair, blaa..]
+l_stuff:
+l_parts: [aeroplane]
+l_no_parts:
+
+groupings/mappings: {
+  person: {
+    head: [head, eyes, mouth], 
+    leg: [higher leg, lower leg],
+    arm: [higher arm, lower arm]
+    },
+  aeroplane: {
+    engine: [engine]
+  }
+}
+
+
+# this is used for evaluation only
+# e.g. mapping to existing problem PPP-20-58
+l_things: [chair, blaa..]
+l_stuff:
+l_parts: [aeroplane]
+l_no_parts:
+
+groupings/mappings: {
+  person: {
+    head: [head, eyes, mouth], 
+    leg: [higher leg, lower leg],
+    arm: [higher arm, lower arm]
+    },
+  aeroplane: {
+    engine: [engine]
+  }
+}
+
+
+
+
+
+
