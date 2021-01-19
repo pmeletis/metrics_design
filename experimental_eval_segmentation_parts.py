@@ -81,7 +81,7 @@ filepaths_pairs = filepaths_pairs_fn(FILEPATH_PATTERN_GT_CPP, BASEPATH_PRED)
 
 # preparation for evaluation
 with open(FILEPATH_EVALUATION_DEF) as fd:
-  defs = yaml.load(fd)
+  defs = yaml.load(fd, Loader=yaml.Loader)
 sid_pid2eval_id = defs['sid_pid2eval_id']
 sid_pid2eval_id__values = sid_pid2eval_id.values()
 Nclasses = len(set(sid_pid2eval_id__values))

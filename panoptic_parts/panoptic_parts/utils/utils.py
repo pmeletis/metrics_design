@@ -39,18 +39,27 @@ def _sparse_ids_mapping_to_dense_ids_mapping(ids_dict, void, length=None, dtype=
   """
   # TODO(panos): add args requirements checking, and refactor this code
   # TODO(panos): check the validity of +1 (useful only if key 0 exists?)
+  allowed_np_int_types = [np.int8, np.uint8, np.int16, np.uint16, np.int32, np.uint32, np.int64, np.uint64]
+  if not isinstance(ids_dict, dict):
+    raise TypeError('ids_dict must be a dictionary.')
+  if not (isinstance(void, int) or (isinstance(void, list) and all(map(lambda x: isinstance(x, int), void)))):
+      raise TypeError('void must be an int type integer or a list of int type integers.')
+  if not (isinstance(length, None) or isinstance(length, int)):
+    raise TypeError('length must be an int type integer.')
+  if not all(map(lambda x: isinstance(dtype, x), allowed_np_int_types)):
+    raise TypeError(f'dtype must be one of the following integer types: {allowed_np_int_types}')
 
   void_np = np.array(void)
   length_mapping = length or np.max(list(ids_dict.keys())) + 1
 
-  if np.array(void).ndim == 0:
+  if void_np.ndim == 0:
     dense_mapping = np.full(length_mapping, void, dtype=dtype)
     for uid, cid in ids_dict.items():
       dense_mapping[uid] = cid
   elif void_np.ndim == 1:
     dense_mapping = np.full((length_mapping, void_np.shape[0]), void, dtype=dtype)
-    for k, v in ids_dict.items():
-      dense_mapping[k] = v
+    for uid, cid in ids_dict.items():
+      dense_mapping[uid] = cid
   else:
     raise NotImplementedError('Not yet implemented.')
 

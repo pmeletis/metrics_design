@@ -1,69 +1,372 @@
 version: 1.0
 comments:
-  - FOllowing needs to be updated...
-  - PASCAL Panoptic Parts 74 parts classes + 1 background
-  - This is our official grouping for the 198 (363 distinct) annotated parts of PASCAL-Part dataset to 74 part-level classes (194 + 4 parts in total)
-  - part-level classes are defined on the 20 scene-level semantic classes of PASCAL VOC
-  - 70 parts come from 16 scene-level semantic classes and 4 parts from the rest 4 classes that are not annotated on part-level (or equivalently they have one part)
-  - 1 background class is also defined
+  - This file contains the new format for the definitions of the tasks ppp_100_71 and ppp_20_58.
+  - countable_parts_grouping provides a mapping of the union of the countable parts to the respective pids.
+  - general_dict contains the complete information of the semantic classes with and without part-level annotations. Both sid and pid are ordered and start from 1. Unlabeled class is not included. The countable_parts are folded as one part class.
+  - part_groupings provides the information of the grouped part-level classes. The countable parts are again folded. Background, ignored and void classes are not included.
 
-# General preprocessing step
+# General preprocessing step (these countable parts occupy a list of pids)
+# countable_parts_grouping provides a mapping of the union of the countable parts to the respective pids.
 
-engine: [10, 11, 12, 13, ...]
+countable_parts_grouping: {
+  aeroplane: {
+    engine: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    wheel: [16, 17, 18, 19, 20, 21, 22, 23, 24, 25],
+  },
+  bus: {
+    door: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+    wheel: [20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+    headlight: [30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
+    window: [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59],
+  },
+  car: {
+    door: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+    wheel: [20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
+    headlight: [30, 31, 32, 33, 34, 35, 36, 37, 38, 39],
+    window: [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59],
+  },
+  motorbike: {
+    headlight: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+  },
+  train: {
+    headlight: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+    coach: [17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+    cfrontside: [27, 28, 29, 30, 31, 32, 33, 34, 35, 36],
+    cleftside: [37, 38, 39, 40, 41, 42, 43, 44, 45, 46],
+    crightside: [47, 48, 49, 50, 51, 52, 53, 54, 55, 56],
+    cbackside: [57, 58, 59, 60, 61, 62, 63, 64, 65, 66],
+    croofside: [67, 68, 69, 70, 71, 72, 73, 74, 75, 76],
+  },
+}
 
 
 
-# general dataset description: sids_pids
+# general dataset description: sids_pids (both sid and pid start from 1)
+# general_dict contains the complete information of the semantic classes with and without part-level annotations. Both sid and pid are ordered and start from 1. Unlabeled class is not included. The countable_parts are folded as one part class.
 
 general_dict: {
-  void: [],
-  person: [
-    head,
-    lower arm,
-    upper arm,
-    ...
-  ],
+  aeroplane: [body, stern, lwing, rwing, tail, engine, wheel],
+  bicycle: [fwheel, bwheel, saddle, handlebar, chainwheel, headlight],
+  bird: [head, leye, reye, beak, torso, neck, lwing, rwing, lleg, lfoot, rleg, rfoot, tail],
+  boat: [],
+  bottle: [cap, body],
+  bus: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, fliplate, bliplate, door, wheel, headlight, window],
+  car: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, fliplate, bliplate, door, wheel, headlight, window],
+  cat: [head, leye, reye, lear, rear, nose, torso, neck, lfleg, lfpa, rfleg, rfpa, lbleg, lbpa, rbleg, rbpa, tail],
+  chair: [],
+  cow: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn, torso, neck, lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg, tail],
+  table: [],
+  dog: [head, leye, reye, lear, rear, nose, torso, neck, lfleg, lfpa, rfleg, rfpa, lbleg, lbpa, rbleg, rbpa, tail, muzzle],
+  horse: [head, leye, reye, lear, rear, muzzle, lfho, rfho, lbho, rbho, torso, neck, lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg, tail],
+  motorbike: [fwheel, bwheel, handlebar, saddle, headlight],
+  person: [head, leye, reye, lear, rear, lebrow, rebrow, nose, mouth, hair, torso, neck, llarm, luarm, lhand, rlarm, ruarm, rhand, llleg, luleg, lfoot, rlleg, ruleg, rfoot],
+  pottedplant: [pot, plant],
+  sheep: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn, torso, neck, lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg, tail],
+  sofa: [],
+  train: [head, hfrontside, hleftside, hrightside, hbackside, hroofside, headlight, coach, cfrontside, cleftside, crightside, cbackside, croofside],
+  tvmonitor: [screen],
+  bag: [],
+  basket: [],
+  bed: [],
+  bedclothes: [],
+  bench: [],
+  bird cage: [],
+  board: [],
+  book: [],
+  bowl: [],
+  box: [],
+  bridge: [],
+  brush: [],
+  bucket: [],
+  building: [],
+  cabinet: [],
+  cage: [],
+  case: [],
+  ceiling: [],
+  cloth: [],
+  computer: [],
+  counter: [],
+  cup: [],
+  curtain: [],
+  cushion: [],
+  door: [],
+  fence: [],
+  fire place: [],
+  floor: [],
+  flower: [],
+  food: [],
+  fridge: [],
+  grandstand: [],
+  grass: [],
+  ground: [],
+  horse-drawn carriage: [],
+  keyboard: [],
+  laptop: [],
+  light: [],
+  mat: [],
+  metal: [],
+  mirror: [],
+  mountain: [],
+  mouse: [],
+  pack: [],
+  paper: [],
+  picture: [],
+  pillow: [],
+  plant: [],
+  plate: [],
+  platform: [],
+  pole: [],
+  poster: [],
+  pot: [],
+  road: [],
+  rock: [],
+  rope: [],
+  rug: [],
+  sand: [],
+  sculpture: [],
+  shelves: [],
+  sidewalk: [],
+  sign: [],
+  sink: [],
+  sky: [],
+  smoke: [],
+  snow: [],
+  speaker: [],
+  stage: [],
+  stair: [],
+  tent: [],
+  toy: [],
+  track: [],
   tree: [],
-  aeroplane: [
-    engine,
-  ],
+  truck: [],
+  wall: [],
+  water: [],
+  window: [],
+  wineglass: [],
+  wood: [],
 }
 
 # this is used for evaluation only
-# Our official benchmark: PPP-100-75
-l_things: [chair, blaa..]
-l_stuff:
-l_parts: [aeroplane]
-l_no_parts:
+# Our official benchmark: PPP-100-71 (75 - 4 so the four things classes with no parts are discarded according to ppp_100_71.yaml)
+l_things: [aeroplane, bicycle, bird, boat, bottle, bus, car, cat, chair, cow, table, dog, horse, motorbike, person, pottedplant, sheep, sofa, train, tvmonitor]
+l_stuff: [bag, basket, bed, bedclothes, bench, bird cage, board, book, bowl, box, bridge, brush, bucket, building, cabinet, cage, case, ceiling, cloth, computer, counter, cup, curtain, cushion, door, fence, fire place, floor, flower, food, fridge, grandstand, grass, ground, horse-drawn carriage, keyboard, laptop, light, mat, metal, mirror, mountain, mouse, pack, paper, picture, pillow, plant, plate, platform, pole, poster, pot, road, rock, rope, rug, sand, sculpture, shelves, sidewalk, sign, sink, sky, smoke, snow, speaker, stage, stair, tent, toy, track, tree, truck, wall, water, window, wineglass, wood, unlabeled]
+l_parts: [aeroplane, bicycle, bird, bottle, bus, car, cat, cow, dog, horse, motorbike, person, pottedplant, sheep, train, tvmonitor]
+l_no_parts: [boat, chair, table, sofa, bag, basket, bed, bedclothes, bench, bird cage, board, book, bowl, box, bridge, brush, bucket, building, cabinet, cage, case, ceiling, cloth, computer, counter, cup, curtain, cushion, door, fence, fire place, floor, flower, food, fridge, grandstand, grass, ground, horse-drawn carriage, keyboard, laptop, light, mat, metal, mirror, mountain, mouse, pack, paper, picture, pillow, plant, plate, platform, pole, poster, pot, road, rock, rope, rug, sand, sculpture, shelves, sidewalk, sign, sink, sky, smoke, snow, speaker, stage, stair, tent, toy, track, tree, truck, wall, water, window, wineglass, wood, unlabeled]
 
-groupings/mappings: {
-  person: {
-    head: [head, eyes, mouth], 
-    leg: [higher leg, lower leg],
-    arm: [higher arm, lower arm]
-    },
+# part_groupings provides the information of the grouped part-level classes. The countable parts are again folded. Background, ignored and void classes are not included.
+part_groupings: {
   aeroplane: {
-    engine: [engine]
-  }
+    body: [body],
+    stern: [stern],
+    wing: [lwing, rwing],
+    tail: [tail],
+    engine: [engine],
+    wheel: [wheel],
+  },
+  bicycle: {
+    wheel: [fwheel, bwheel],
+    saddle: [saddle],
+    handlebar: [handlebar],
+    chainwheel: [chainwheel],
+    headlight: [headlight],
+  },
+  bird: {
+    head: [head, leye, reye, beak],
+    torso: [torso],
+    neck: [neck],
+    wing: [lwing, rwing],
+    leg: [lleg, lfoot, rleg, rfoot],
+    tail: [tail],
+  },
+  bottle: {
+    cap: [cap],
+    body: [body],
+  },
+  bus: {
+    chassis: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, door],
+    license plate: [fliplate, bliplate],
+    wheel: [wheel],
+    headlight: [headlight],
+    window: [window],
+  },
+  car: {
+    chassis: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, door],
+    license plate: [fliplate, bliplate],
+    wheel: [wheel],
+    headlight: [headlight],
+    window: [window],
+  },
+  cat: {
+    head: [head, leye, reye, lear, rear, nose],
+    torso: [torso],
+    neck: [neck],
+    leg: [lfleg, lfpa, rfleg, rfpa, lbleg, lbpa, rbleg, rbpa],
+    tail: [tail],
+  },
+  cow: {
+    head: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn],
+    torso: [torso],
+    neck: [neck],
+    leg: [lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+    tail: [tail],
+  },
+  dog: {
+    head: [head, leye, reye, lear, rear, nose, muzzle],
+    torso: [torso],
+    neck: [neck],
+    leg: [lfleg, lfpa, rfleg, rfpa, lbleg, lbpa, rbleg, rbpa],
+    tail: [tail],
+  },
+  horse: {
+    head: [head, leye, reye, lear, rear, muzzle],
+    leg: [lfho, rfho, lbho, rbho, lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+    torso: [torso],
+    neck: [neck],
+    tail: [tail],
+  },
+  motorbike: {
+    wheel: [fwheel, bwheel],
+    handlebar: [handlebar],
+    saddle: [saddle],
+    headlight: [headlight],
+  },
+  person: {
+    head: [head, leye, reye, lear, rear, lebrow, rebrow, nose, mouth, hair, neck],
+    torso: [torso],
+    lower arm: [llarm, lhand, rlarm, rhand],
+    upper arm: [luarm, ruarm],
+    lower leg: [llleg, lfoot, rlleg, rfoot],
+    upper leg: [luleg, ruleg],
+  },
+  pottedplant: {
+    pot: [pot],
+    plant: [plant],
+  },
+  sheep: {
+    head: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn],
+    torso: [torso],
+    neck: [neck],
+    leg: [lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+    tail: [tail],
+  },
+  train: {
+    head: [head, hfrontside, hleftside, hrightside, hbackside, hroofside],
+    headlight: [headlight],
+    coach: [coach, cfrontside, cleftside, crightside, cbackside, croofside],
+  },
+  tvmonitor: {
+    screen: [screen],
+  },
 }
 
 
 # this is used for evaluation only
-# e.g. mapping to existing problem PPP-20-58
-l_things: [chair, blaa..]
-l_stuff:
-l_parts: [aeroplane]
-l_no_parts:
+# e.g. mapping to existing problem PPP-20-58. 
+#  boat, table, chair, sofa are defined as semantic classes with parts
+l_things: [aeroplane, bicycle, bird, boat, bottle, bus, car, cat, chair, cow, table, dog, horse, motorbike, person, pottedplant, sheep, sofa, train, tvmonitor]
+l_stuff: []
+l_parts: [aeroplane, bicycle, bird, boat, bottle, bus, car, cat, chair, cow, table, dog, horse, motorbike, person, pottedplant, sheep, sofa, train, tvmonitor]
+l_no_parts: []
 
-groupings/mappings: {
-  person: {
-    head: [head, eyes, mouth], 
-    leg: [higher leg, lower leg],
-    arm: [higher arm, lower arm]
-    },
+# part_groupings provides the information of the grouped part-level classes. The countable parts are again folded. Part-level Background and ignored classes are not included.
+part_groupings: {
   aeroplane: {
-    engine: [engine]
-  }
+    body: [body],
+    stern: [stern, tail],
+    wing: [lwing, rwing],
+    engine: [engine],
+    wheel: [wheel],
+  },
+  bicycle: {
+    wheel: [fwheel, bwheel, chainwheel],
+    body: [saddle, handlebar, headlight],
+  },
+  bird: {
+    head: [head, leye, reye, beak],
+    torso: [torso, neck, tail],
+    wing: [lwing, rwing],
+    leg: [lleg, lfoot, rleg, rfoot],
+  },
+  boat: {
+    boat: [void],
+  },
+  bottle: {
+    cap: [cap],
+    body: [body],
+  },
+  bus: {
+    body: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, fliplate, bliplate, door, headlight],
+    wheel: [wheel],
+    window: [window],
+  },
+  car: {
+    body: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, door],
+    license plate: [fliplate, bliplate],
+    wheel: [wheel],
+    light: [headlight],
+    window: [window],
+  },
+  cat: {
+    head: [head, leye, reye, lear, rear, nose],
+    torso: [torso, neck],
+    lower leg: [lfleg, lfpa, rfleg, rfpa, lbleg, lbpa, rbleg, rbpa],
+    tail: [tail],
+  },
+  chair: {
+    chair: [void],
+  },
+  cow: {
+    head: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn],
+    torso: [torso, neck],
+    lower leg: [lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+    tail: [tail],
+  },
+  table: {
+    table: [void],
+  },
+  dog: {
+    head: [head, leye, reye, lear, rear, nose, muzzle],
+    torso: [torso, neck],
+    lower leg: [lfleg, lfpa, rfleg, rfpa, lbleg, lbpa, rbleg, rbpa],
+    tail: [tail],
+  },
+  horse: {
+    head: [head, leye, reye, lear, rear, muzzle],
+    leg: [lfho, rfho, lbho, rbho, lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+    torso: [torso, neck],
+    tail: [tail],
+  },
+  motorbike: {
+    wheel: [fwheel, bwheel],
+    body: [handlebar, saddle, headlight],
+  },
+  person: {
+    head: [head, leye, reye, lear, rear, lebrow, rebrow, nose, mouth, hair, neck],
+    torso: [torso],
+    lower arm: [llarm, lhand, rlarm, rhand],
+    upper arm: [luarm, ruarm],
+    lower leg: [llleg, lfoot, rlleg, rfoot],
+    upper leg: [luleg, ruleg],
+  },
+  pottedplant: {
+    pot: [pot],
+    plant: [plant],
+  },
+  sheep: {
+    head: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn],
+    torso: [torso, neck, tail],
+    leg: [lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+  },
+  sofa: {
+    sofa: [void],
+  },
+  train: {
+    train: [head, hfrontside, hleftside, hrightside, hbackside, hroofside, headlight, coach, cfrontside, cleftside, crightside, cbackside, croofside],
+  },
+  tvmonitor: {
+    frame: [void],
+    screen: [screen],
+  },
 }
 
 

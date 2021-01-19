@@ -57,7 +57,7 @@ def parse_sid_pid2eval_id(sid_pid2eval_id, max_sid):
 
 def _parse_yaml(fp_yaml):
   with open(fp_yaml) as fd:
-    defs = yaml.load(fd)
+    defs = yaml.load(fd, Loader=yaml.Loader)
   max_sid = defs['max_sid']
   sid_pid2eval_id = defs['sid_pid2eval_id']
   sid_pid2eval_id = parse_sid_pid2eval_id(sid_pid2eval_id, max_sid)
