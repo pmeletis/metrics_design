@@ -32,7 +32,7 @@ basepaths_outputs = [fl.replace('/labels/', '/labels_colored/').replace('.tif', 
 FILEPATH_TASK_DEF = 'panoptic_parts/utils/defs/ppp_100_70.yaml'
 
 with open(FILEPATH_TASK_DEF) as fp:
-  task_def = yaml.load(fp)
+  task_def = yaml.load(fp, Loader=yaml.Loader)
 SID2COLOR = task_def['sid2color']
 # add colors for all sids that may exist in labels, but don't have a color from task_def
 SID2COLOR.update({sid: SID2COLOR[-1] # we use the void color here
