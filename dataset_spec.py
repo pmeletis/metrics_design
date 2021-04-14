@@ -75,6 +75,6 @@ class DatasetSpec(object):
 
 
 if __name__ == '__main__':
-  spec = DatasetSpec('/home/panos/git/github/pmeletis/metrics_design/[WIP]ppp_datasetspec.yaml')
-  # spec = DatasetSpec('/home/panos/git/github/pmeletis/metrics_design/[WIP]cpp_datasetspec.yaml')
+  # spec = DatasetSpec('/home/panos/git/github/pmeletis/metrics_design/ppp_datasetspec.yaml')
+  spec = DatasetSpec('/home/panos/git/github/pmeletis/metrics_design/cpp_datasetspec.yaml')
   breakpoint()

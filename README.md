@@ -1,5 +1,7 @@
 # metrics_design
 
 Almost finalized:
- - [WIP]ppp_datasetspec.yaml
- - [WIP]ppp_official_iou_evalspec.yaml
+ - ppp_datasetspec.yaml
+ - cpp_datasetspec.yaml
+ - dataset_spec.py
+ - ppp_official_iou_evalspec.yaml
