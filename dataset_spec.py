@@ -11,15 +11,18 @@ class DatasetSpec(object):
 
   Accessible specification attributes:
    - l: list, the names of the scene-level semantic class
-   - l_things: list, the names of the scene-level things semantic class
-   - l_stuff: list, the names of the scene-level stuff semantic class
-   - l_parts:
-   - l_noparts:
+   - l_things: list, the names of the scene-level things class
+   - l_stuff: list, the names of the scene-level stuff class
+   - l_parts: list, the names of the scene-level classes with parts
+   - l_noparts: list, the names of the scene-level classes without parts
    - sid2scene_class: dict, mapping from sid to scene-level semantic class name
+   - sid2scene_color: dict, mapping from sid to scene-level semantic class color
   
   Member functions:
    - scene_class_from_sid(sid)
    - sid_from_scene_class(name)
+   - scene_color_from_scene_class(name)
+   - scene_color_from_sid(sid)
   """
   def __init__(self, spec_path):
     """
@@ -49,9 +52,14 @@ class DatasetSpec(object):
     self.l_parts = list(filter(lambda k: bool(self._scene_class2part_classes[k]),
                                self._scene_class2part_classes.keys()))
     self.l_noparts = list(set(self.l) - set(self.l_parts))
-    if self.l[0] != 'unlabeled':
+    if 'unlabeled' not in self.l:
       self.l.insert(0, 'unlabeled')
+    else:
+      if self.l[0] != 'unlabeled':
+        raise ValueError(
+          '"unlabeled" scene-level class exists in scene_class2part_classes.keys() but not in position 0.')
     self.sid2scene_class = dict(enumerate(self.l))
+    self.sid2scene_color = {sid: self._scene_class2color[name] for sid, name in self.sid2scene_class.items()}
 
   def sid_from_scene_class(self, name):
     return self.l.index(name)
@@ -59,7 +67,14 @@ class DatasetSpec(object):
   def scene_class_from_sid(self, sid):
     return self.l[sid]
 
+  def scene_color_from_scene_class(self, name):
+    return self._scene_class2color[name]
+
+  def scene_color_from_sid(self, sid):
+    return self.sid2scene_color[sid]
+
 
 if __name__ == '__main__':
-  spec = DatasetSpec('/home/panos/git/github/pmeletis/metrics_design/ppp_datasetspec.yaml')
+  spec = DatasetSpec('/home/panos/git/github/pmeletis/metrics_design/[WIP]ppp_datasetspec.yaml')
+  # spec = DatasetSpec('/home/panos/git/github/pmeletis/metrics_design/[WIP]cpp_datasetspec.yaml')
   breakpoint()
