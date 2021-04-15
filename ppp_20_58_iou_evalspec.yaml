@@ -1,0 +1,120 @@
+version: 2.0
+comments:
+ - The IoU eval specification contains two optional fields.
+ - scene_class_new2scene_classes_old contains a mapping from the new scene-level classes to at least one of the original scene-level classes of the dataset (dataset_spec.l). Use this mapping to group or ignore scene-level classes.
+ - part_groupings is a mapping from the new part-level classes to at least one of the original part-level classes of the dataset.
+
+dataset_spec_path: ppp_datasetspec.yaml
+
+# 
+#scene_class_new2scene_classes_old: {
+#}
+
+# part_groupings provides the information of the grouped part-level classes. The countable parts are again folded. Part-level Background and ignored classes are not included.
+# using typing module conventions:
+# Dict(scene_class_new, Dict(part_class_new, part_classes_old))
+part_groupings: {
+  aeroplane: {
+    body: [body],
+    stern: [stern, tail],
+    wing: [lwing, rwing],
+    engine: [engine],
+    wheel: [wheel],
+  },
+  bicycle: {
+    wheel: [fwheel, bwheel, chainwheel],
+    body: [saddle, handlebar, headlight],
+  },
+  bird: {
+    head: [head, leye, reye, beak],
+    torso: [torso, neck, tail],
+    wing: [lwing, rwing],
+    leg: [lleg, lfoot, rleg, rfoot],
+  },
+  boat: {
+    boat: [void],
+  },
+  bottle: {
+    cap: [cap],
+    body: [body],
+  },
+  bus: {
+    body: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, fliplate, bliplate, door, headlight],
+    wheel: [wheel],
+    window: [window],
+  },
+  car: {
+    body: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, door],
+    license plate: [fliplate, bliplate],
+    wheel: [wheel],
+    light: [headlight],
+    window: [window],
+  },
+  cat: {
+    head: [head, leye, reye, lear, rear, nose],
+    torso: [torso, neck],
+    lower leg: [lfleg, lfpa, rfleg, rfpa, lbleg, lbpa, rbleg, rbpa],
+    tail: [tail],
+  },
+  chair: {
+    chair: [void],
+  },
+  cow: {
+    head: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn],
+    torso: [torso, neck],
+    lower leg: [lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+    tail: [tail],
+  },
+  table: {
+    table: [void],
+  },
+  dog: {
+    head: [head, leye, reye, lear, rear, nose, muzzle],
+    torso: [torso, neck],
+    lower leg: [lfleg, lfpa, rfleg, rfpa, lbleg, lbpa, rbleg, rbpa],
+    tail: [tail],
+  },
+  horse: {
+    head: [head, leye, reye, lear, rear, muzzle],
+    leg: [lfho, rfho, lbho, rbho, lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+    torso: [torso, neck],
+    tail: [tail],
+  },
+  motorbike: {
+    wheel: [fwheel, bwheel],
+    body: [handlebar, saddle, headlight],
+  },
+  person: {
+    head: [head, leye, reye, lear, rear, lebrow, rebrow, nose, mouth, hair, neck],
+    torso: [torso],
+    lower arm: [llarm, lhand, rlarm, rhand],
+    upper arm: [luarm, ruarm],
+    lower leg: [llleg, lfoot, rlleg, rfoot],
+    upper leg: [luleg, ruleg],
+  },
+  pottedplant: {
+    pot: [pot],
+    plant: [plant],
+  },
+  sheep: {
+    head: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn],
+    torso: [torso, neck, tail],
+    leg: [lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+  },
+  sofa: {
+    sofa: [void],
+  },
+  train: {
+    train: [head, hfrontside, hleftside, hrightside, hbackside, hroofside, headlight, coach, cfrontside, cleftside, crightside, cbackside, croofside],
+  },
+  tvmonitor: {
+    frame: [void],
+    screen: [screen],
+  },
+}
+
+
+
+
+
+

@@ -38,6 +38,10 @@ class DatasetSpec(object):
     # describes the instance information layer
     self._scene_classes_with_instances = spec['scene_classes_with_instances']
     self._scene_class2color = spec.get('scene_class2color')
+    if self._scene_class2color is None:
+      raise ValueError(
+          '"scene_class2color" in dataset_spec must be provided for now. '
+          'In the future random color assignment will be implemented.')
     self._countable_parts_grouping = spec.get('countable_parts_grouping')
 
     self._extract_useful_attributes()
@@ -57,7 +61,7 @@ class DatasetSpec(object):
     else:
       if self.l[0] != 'unlabeled':
         raise ValueError(
-          '"unlabeled" scene-level class exists in scene_class2part_classes.keys() but not in position 0.')
+            '"unlabeled" scene-level class exists in scene_class2part_classes.keys() but not in position 0.')
     self.sid2scene_class = dict(enumerate(self.l))
     self.sid2scene_color = {sid: self._scene_class2color[name] for sid, name in self.sid2scene_class.items()}
 
