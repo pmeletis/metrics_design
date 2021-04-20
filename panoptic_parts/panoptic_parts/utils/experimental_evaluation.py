@@ -14,18 +14,18 @@ from panoptic_parts.utils.utils import (
 # VALIDATE_ARGS = True
 
 
-def parse_sid_pid2eval_id_v2(sid_pid2eval_id: Dict[Union[int, 'DEFAULT'], Union[int, 'IGNORED']]):
+def parse__sid_pid2eid__v2(sid_pid2eid__template: Dict[Union[int, 'DEFAULT'], Union[int, 'IGNORED']]):
   """
   Parsing priority, sid_pid is mapped to:
-    1. sid_pid2eval_id[sid_pid] if it exists, else
-    2. sid_pid2eval_id[sid] if it exists, else
-    3. sid_pid2eval_id['DEFAULT'] value
+    1. sid_pid2eid__template[sid_pid] if it exists, else
+    2. sid_pid2eid__template[sid] if it exists, else
+    3. sid_pid2eid__template['DEFAULT'] value
 
   Returns:
     sid_pid2eval_id: a dense mapping having keys for all possible sid_pid s (0 to 99_99)
-      using the provided sparse sid_pid2eval_id and the reserved DEFAULT key and IGNORED value.
+      using the provided sparse sid_pid2eid__template and the reserved DEFAULT key and IGNORED value.
   """
-  sp2e = sid_pid2eval_id
+  sp2e = sid_pid2eid__template
   sp2e_keys = sp2e.keys()
   sp2e_new = dict()
   for k in range(99_99):
@@ -43,7 +43,7 @@ def parse_sid_pid2eval_id_v2(sid_pid2eval_id: Dict[Union[int, 'DEFAULT'], Union[
       sp2e_new[k] = sp2e['DEFAULT']
       continue
 
-    raise ValueError(f'sid_pid2eval_id does not follow the specification rules for key {k}.')
+    raise ValueError(f'sid_pid2eid__template does not follow the specification rules for key {k}.')
 
   # replace ignored sid_pid s with the correct ignored eval_id
   eval_id_max = max(filter(lambda v: isinstance(v, int), sp2e_new.values()))
@@ -240,7 +240,7 @@ class ConfusionMatrixEvaluator_v2(object):
     self.filepaths_pairs_generator = lambda : (p for p in self.filepaths_pairs)
     with open(filepath_yaml) as fd:
       spec = yaml.load(fd, Loader=yaml.Loader)
-    self.sid_pid2eval_id = parse_sid_pid2eval_id_v2(spec['sid_pid2eval_id'])
+    self.sid_pid2eval_id = parse__sid_pid2eid__v2(spec['sid_pid2eid__template'])
     self.Nclasses = len(set(self.sid_pid2eval_id.values()))
     # TODO(panos): here we assume that IGNORE eval_id exists and is the max eval_id
     self.eid_ignore = max(self.sid_pid2eval_id.values())
@@ -316,7 +316,7 @@ class ConfusionMatrixEvaluator_v2(object):
 if __name__ == '__main__':
   with open('../cpp_parts_24.yaml') as fd:
     spec = yaml.load(fd)
-  sp2e_new = parse_sid_pid2eval_id_v2(spec['sid_pid2eval_id'])
+  sp2e_new = parse__sid_pid2eid__v2(spec['sid_pid2eid__template'])
   eval_id_max_non_ignored = max(sp2e_new.values())
   # prints (sid_pid, eval_id) without the tuples containing the background (0) and the ignored eids
   print(*filter(lambda e: 0 < e[1] < eval_id_max_non_ignored, sp2e_new.items()), sep='\n')

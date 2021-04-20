@@ -52,7 +52,7 @@ import yaml
 from panoptic_parts.utils.utils import _sparse_ids_mapping_to_dense_ids_mapping
 from panoptic_parts.utils.format import decode_uids
 from panoptic_parts.utils.experimental_evaluation import (
-    ConfusionMatrixEvaluator_v2, parse_sid_pid2eval_id_v2)
+    ConfusionMatrixEvaluator_v2, parse__sid_pid2eid__v2)
 
 
 FILEPATH_EVALUATION_DEF = 'cpp_iouparts_23_evalspec.yaml'
@@ -96,7 +96,7 @@ def pred_reader_fn(fp_pred, sid_pid2eval_id):
 # preparation for evaluation
 with open(FILEPATH_EVALUATION_DEF) as fd:
   spec = yaml.load(fd, Loader=yaml.Loader)
-sid_pid2eval_id = parse_sid_pid2eval_id_v2(spec['sid_pid2eval_id'])
+sid_pid2eval_id = parse__sid_pid2eid__v2(spec['sid_pid2eid__template'])
 # TODO(panos): here we assume that IGNORE eval_id exists and is the max eval_id
 eid_ignore = max(sid_pid2eval_id.values())
 sp2e_np = _sparse_ids_mapping_to_dense_ids_mapping(sid_pid2eval_id, eid_ignore)

@@ -29,7 +29,7 @@ class IOUPartsEvalSpec(object):
     self._spec_version = espec['version']
     self._dspec = DatasetSpec(espec['dataset_spec_path'])
     self.dataset_spec = self._dspec
-    self.sid_pid2eval_id = espec['sid_pid2eval_id']
+    self.sid_pid2eid__template = espec['sid_pid2eid__template']
     self.eval_id2scene_part_class = espec['eval_id2scene_part_class']
 
     self._extract_useful_attributes()

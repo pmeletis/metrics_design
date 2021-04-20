@@ -1,11 +1,11 @@
 version: 2.0
 comments:
   - Cityscapes Panoptic Parts 23 parts classes (without background)
-  - see cpp_iouparts_evalspec for now
+  - refer to cpp_iouparts_24_evalspec for now
 
 dataset_spec_path: cpp_datasetspec.yaml
 
-sid_pid2eval_id: {
+sid_pid2eid__template: {
   # evaluated
   24_01: 0,  24_02: 1,  24_03: 2,  24_04: 3,
   25_01: 4,  25_02: 5,  25_03: 6,  25_04: 7,
