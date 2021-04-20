@@ -44,10 +44,10 @@ def _sparse_ids_mapping_to_dense_ids_mapping(ids_dict, void, length=None, dtype=
     raise TypeError('ids_dict must be a dictionary.')
   if not (isinstance(void, int) or (isinstance(void, list) and all(map(lambda x: isinstance(x, int), void)))):
       raise TypeError('void must be an int type integer or a list of int type integers.')
-  if not (isinstance(length, None) or isinstance(length, int)):
-    raise TypeError('length must be an int type integer.')
-  if not all(map(lambda x: isinstance(dtype, x), allowed_np_int_types)):
-    raise TypeError(f'dtype must be one of the following integer types: {allowed_np_int_types}')
+  if length is not None and not isinstance(length, int):
+    raise TypeError(f'length must be None or an int type integer, but was {length}.')
+  if not any(map(lambda x: dtype is x, allowed_np_int_types)):
+    raise TypeError(f'dtype must be one of the following integer types: {allowed_np_int_types}, but was {dtype}.')
 
   void_np = np.array(void)
   length_mapping = length or np.max(list(ids_dict.keys())) + 1
