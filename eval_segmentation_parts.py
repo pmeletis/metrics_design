@@ -52,12 +52,14 @@ import yaml
 from panoptic_parts.utils.utils import _sparse_ids_mapping_to_dense_ids_mapping
 from panoptic_parts.utils.format import decode_uids
 from panoptic_parts.utils.experimental_evaluation import (
-    ConfusionMatrixEvaluator, parse_sid_pid2eval_id)
+    ConfusionMatrixEvaluator_v2, parse_sid_pid2eval_id_v2)
 
 
-FILEPATH_EVALUATION_DEF = 'panoptic_parts/evaluation/defs/cpp_parts_24.yaml'
-FILEPATH_PATTERN_GT_CPP = op.join('tests', 'tests_files', 'cityscapes_panoptic_parts', 'gtFine', 'val', '*', '*.tif')
-# FILEPATH_PATTERN_GT_PPP = op.join('tests', 'tests_files', 'pascal_panoptic_parts', 'labels', '*.tif')
+FILEPATH_EVALUATION_DEF = 'cpp_iouparts_23_evalspec.yaml'
+FILEPATH_PATTERN_GT_CPP = op.join('/home/panos/git/p.meletis/panoptic_parts_datasets', 'tests', 'tests_files',
+    'cityscapes_panoptic_parts', 'gtFine_v2', 'val', '*', '*.tif')
+# FILEPATH_PATTERN_GT_PPP = op.join('/home/panos/git/p.meletis/panoptic_parts_datasets', 'tests', 'tests_files',
+#     'pascal_panoptic_parts', 'labels', '*.tif')
 BASEPATH_PRED = '/use/a/real/path'
 
 def filepaths_pairs_fn(filepath_pattern_gt, basepath_pred):
@@ -72,21 +74,12 @@ def filepaths_pairs_fn(filepath_pattern_gt, basepath_pred):
     # here we use the ground truth paths for predictions
     fp_pred = op.join(basepath_pred, f"{image_id}.tif")
     fp_pred = fp_gt
-    assert False, 'delete this when adapted to your needs'
+    # assert False, 'delete this when adapted to your needs'
     ########################
     pairs.append((fp_gt, fp_pred))
   return pairs
 
 filepaths_pairs = filepaths_pairs_fn(FILEPATH_PATTERN_GT_CPP, BASEPATH_PRED)
-
-# preparation for evaluation
-with open(FILEPATH_EVALUATION_DEF) as fd:
-  defs = yaml.load(fd, Loader=yaml.Loader)
-sid_pid2eval_id = defs['sid_pid2eval_id']
-sid_pid2eval_id__values = sid_pid2eval_id.values()
-Nclasses = len(set(sid_pid2eval_id__values))
-ignore_ids = [max(sid_pid2eval_id__values) + 1] if -1 in sid_pid2eval_id__values else list()
-names = list(defs['eval_id2name'].values()) if 'eval_id2name' in defs.keys() else None
 
 #########
 # here we assume that predictions are encoded as ground truth
@@ -98,18 +91,25 @@ def pred_reader_fn(fp_pred, sid_pid2eval_id):
   _, _, _, sids_pids_pred = decode_uids(label_pred, return_sids_pids=True)
   eids_pred = sid_pid2eval_id[sids_pids_pred]
   return eids_pred
-
-max_sid = defs['max_sid']
-sid_pid2eval_id = parse_sid_pid2eval_id(sid_pid2eval_id, max_sid)
-sid_pid2eval_id__dense = _sparse_ids_mapping_to_dense_ids_mapping(
-    sid_pid2eval_id, 0, length=(max_sid * 100 + 99) + 1)
-pred_reader_fn = functools.partial(pred_reader_fn, sid_pid2eval_id=sid_pid2eval_id__dense)
 #########
 
+# preparation for evaluation
+with open(FILEPATH_EVALUATION_DEF) as fd:
+  spec = yaml.load(fd, Loader=yaml.Loader)
+sid_pid2eval_id = parse_sid_pid2eval_id_v2(spec['sid_pid2eval_id'])
+# TODO(panos): here we assume that IGNORE eval_id exists and is the max eval_id
+eid_ignore = max(sid_pid2eval_id.values())
+sp2e_np = _sparse_ids_mapping_to_dense_ids_mapping(sid_pid2eval_id, eid_ignore)
+pred_reader_fn = functools.partial(pred_reader_fn, sid_pid2eval_id=sp2e_np)
+
 # create and run evaluator
-evaluator = ConfusionMatrixEvaluator(FILEPATH_EVALUATION_DEF,
-                                     filepaths_pairs,
-                                     pred_reader_fn,
-                                     experimental_validate_args=False)
+sid_pid2eval_id__values = sid_pid2eval_id.values()
+# ignore_ids = [max(sid_pid2eval_id__values) + 1] if -1 in sid_pid2eval_id__values else list()
+ignore_ids = [eid_ignore]
+names = list(spec['eval_id2scene_part_class'].values())
+evaluator = ConfusionMatrixEvaluator_v2(FILEPATH_EVALUATION_DEF,
+                                        filepaths_pairs,
+                                        pred_reader_fn,
+                                        experimental_validate_args=False)
 cm = evaluator.compute_cm()
 evaluator.print_metrics(names=names, printcmd=True, ignore_ids=ignore_ids)

@@ -6,9 +6,11 @@ import platform
 
 from dataset_spec import DatasetSpec
 
-class IOUEvalSpec(object):
+class IOUPartsEvalSpec(object):
   """
-  This class creates an evaluation specification from a YAML specification file and provides convenient attributes from the specification and useful functions. Moreover, it provides defaults and specification checking.
+  This class creates an evaluation specification from a YAML specification file and provides
+  convenient attributes from the specification and useful functions. Moreover, it provides
+  defaults and specification checking.
 
   Accessible specification attributes:
    - dataset_spec: the associated dataset specification
@@ -27,11 +29,8 @@ class IOUEvalSpec(object):
     self._spec_version = espec['version']
     self._dspec = DatasetSpec(espec['dataset_spec_path'])
     self.dataset_spec = self._dspec
-    self._scene_class_new2scene_classes_old = espec.get('scene_class2part_classes')
-    if self._scene_class_new2scene_classes_old is None:
-      print('TODO')
-      # generate default mapping from _dspec
-    self._part_groupings = espec.get('part_groupings')
+    self.sid_pid2eval_id = espec['sid_pid2eval_id']
+    self.eval_id2scene_part_class = espec['eval_id2scene_part_class']
 
     self._extract_useful_attributes()
 
@@ -40,5 +39,5 @@ class IOUEvalSpec(object):
 
 
 if __name__ == '__main__':
-  spec = IOUEvalSpec('ppp_20_58_iou_evalspec.yaml')
+  spec = IOUPartsEvalSpec('cpp_iouparts_24_evalspec.yaml')
   breakpoint()
