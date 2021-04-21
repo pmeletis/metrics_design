@@ -37,22 +37,19 @@ Benchmarks (full resolution, Intel® Core™ i9-7900X CPU @ 3.30GHz):
 """
 import sys
 sys.path.append('panoptic_parts')
-
 import glob
 import os.path as op
 import multiprocessing
 import functools
 
+import yaml
 from PIL import Image
 import numpy as np
 import tensorflow as tf
 assert tf.version.VERSION[0] == '2', 'Uses TF r2.x functionality.'
 
-import yaml
-from panoptic_parts.utils.utils import _sparse_ids_mapping_to_dense_ids_mapping
 from panoptic_parts.utils.format import decode_uids
-from panoptic_parts.utils.experimental_evaluation import (
-    ConfusionMatrixEvaluator_v2, parse__sid_pid2eid__v2)
+from panoptic_parts.utils.experimental_evaluation import ConfusionMatrixEvaluator_v2
 from eval_spec import SegmentationPartsEvalSpec
 
 
@@ -62,6 +59,7 @@ FILEPATH_PATTERN_GT_CPP = op.join('/home/panos/git/p.meletis/panoptic_parts_data
 # FILEPATH_PATTERN_GT_PPP = op.join('/home/panos/git/p.meletis/panoptic_parts_datasets', 'tests', 'tests_files',
 #     'pascal_panoptic_parts', 'labels', '*.tif')
 BASEPATH_PRED = '/use/a/real/path'
+
 
 def filepaths_pairs_fn(filepath_pattern_gt, basepath_pred):
   # return a list of tuples with paths
@@ -80,9 +78,8 @@ def filepaths_pairs_fn(filepath_pattern_gt, basepath_pred):
     pairs.append((fp_gt, fp_pred))
   return pairs
 
-filepaths_pairs = filepaths_pairs_fn(FILEPATH_PATTERN_GT_CPP, BASEPATH_PRED)
-
-#########
+######################
+# Adapt to your case #
 # here we assume that predictions are encoded as ground truth
 def pred_reader_fn(fp_pred, sid_pid2eval_id):
   # function provided to ConfusionMatrixEvaluator,
@@ -92,10 +89,11 @@ def pred_reader_fn(fp_pred, sid_pid2eval_id):
   _, _, _, sids_pids_pred = decode_uids(label_pred, return_sids_pids=True)
   eids_pred = sid_pid2eval_id[sids_pids_pred]
   return eids_pred
-#########
+######################
 
 # create and run evaluator
 spec = SegmentationPartsEvalSpec(FILEPATH_EVALUATION_DEF)
+filepaths_pairs = filepaths_pairs_fn(FILEPATH_PATTERN_GT_CPP, BASEPATH_PRED)
 pred_reader_fn = functools.partial(pred_reader_fn, sid_pid2eval_id=spec.sp2e_np)
 evaluator = ConfusionMatrixEvaluator_v2(spec,
                                         filepaths_pairs,

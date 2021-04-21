@@ -28,5 +28,5 @@ eval_id2scene_part_class: {
   9: car-windows, 10: car-wheels, 11: car-lights, 12: car-license_plate, 13: car-chassis,
   14: truck-windows, 15: truck-wheels, 16: truck-lights, 17: truck-license_plate, 18: truck-chassis,
   19: bus-windows, 20: bus-wheels, 21: bus-lights, 22: bus-license_plate, 23: bus-chassis,
-  24: ignore
+  24: ignored
 }

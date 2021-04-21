@@ -1,10 +1,10 @@
-version: 1.0
+version: 2.0
 comments:
   - PASCAL Panoptic Parts 57 parts classes + 1 background
   - we use the grouping and indexing used in [X, X, X]
 
-max_sid: 99
 
+# TODO(panos): simplify this using countable_parts_groupings, which will reduce the length of this mapping
 sid_pid2eid__template: {
   # evaluated
   1_01: 1, 1_02: 4, 1_03: 3, 1_04: 3, 1_05: 4,
@@ -93,12 +93,13 @@ sid_pid2eid__template: {
 
   20: 57, 20_00: 57, 20_01: 56, # tvmonitor (20) has only one part ("screen") so we set the rest of the object as "frame"
   # ignored
-  1: -1, 2: -1, 3: -1, 5: -1, 6: -1, 7: -1, 8: -1, 10: -1, 12: -1, 13: -1,
-  14: -1, 15: -1, 16: -1, 17: -1, 19: -1,
+  1: IGNORED, 2: IGNORED, 3: IGNORED, 5: IGNORED, 6: IGNORED, 7: IGNORED, 8: IGNORED, 10: IGNORED, 12: IGNORED, 13: IGNORED,
+  14: IGNORED, 15: IGNORED, 16: IGNORED, 17: IGNORED, 19: IGNORED,
   # background
-  -1: 0}
+  DEFAULT: 0
+}
 
-eval_id2name: {
+eval_id2scene_part_class: {
   # background
   0: background,
   #aeroplane ((stern, tail) -> stern)
@@ -142,5 +143,5 @@ eval_id2name: {
   # tvmonitor
   56: screen, 57: frame,
   # ignored
-  58: unlabeled
+  58: ignored
 }

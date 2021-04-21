@@ -5,14 +5,22 @@
 
    ```python
     evaluate_metric(eval_spec_path: str,
-                    gt_preds_paths: List(Tuple(str, str))) -> Dict(str, Union(float, list))
+                    gt_preds_paths: List[Tuple[str, str]]
+    ) -> Dict[str, Union[float, list]]
    ```
 
 ## Almost finalized
- - ppp_datasetspec.yaml
- - cpp_datasetspec.yaml
- - dataset_spec.py
- - eval_spec.py
- - cpp_iouparts_23_evalspec.yaml
- - cpp_iouparts_24_evalspec.yaml
- - eval_segmentation_parts.py
+ - Dataset specifications
+   - ppp_datasetspec.yaml
+   - cpp_datasetspec.yaml
+   - dataset_spec.py
+ - Evaluation specifications
+   - cpp_iouparts_9_evalspec.yaml
+   - cpp_iouparts_10_evalspec.yaml
+   - cpp_iouparts_23_evalspec.yaml
+   - cpp_iouparts_24_evalspec.yaml
+   - ppp_iouparts_7_evalspec.yaml
+   - ppp_iouparts_58_evalspec.yaml
+   - eval_spec.py
+ - Evaluation scripts
+   - eval_segmentation_parts.py
