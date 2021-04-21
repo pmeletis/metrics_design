@@ -24,3 +24,17 @@
    - eval_spec.py
  - Evaluation scripts
    - eval_segmentation_parts.py
+
+## ToDo's
+ - functionalize eval_segmentation_parts and rename it
+ - add official eval specs for CPP and PPP
+ - add eval_ppq.py
+ - add eval specs for PPQ metric
+ - dataset and CVPR READMEs
+
+## Proposed Timeline
+ - 28/04: Finalize ToDo's
+ - 30/04: Complete internal testing by three of us
+ - 02/05: Publish repo
+ - 04/05: Upload CVPR to arxiv
+ - 18/05: Update Tech report on arxiv
