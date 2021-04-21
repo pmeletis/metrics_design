@@ -213,38 +213,33 @@ class ConfusionMatrixEvaluator_v2(object):
   using a tf.data pipeline for fast execution.
 
   A standard use of this class is:
-    evaluator = ConfusionMatrixEvaluator_v2(filepath_yaml, list_of_filepaths_pairs, pred_reader_fn)
+    evaluator = ConfusionMatrixEvaluator_v2(eval_spec, list_of_filepaths_pairs, pred_reader_fn)
     confusion_matrix = evaluator.compute_cm()
     metrics = compute_metrics_with_any_external_function(confusion_matrix)
   """
 
   def __init__(self,
-               filepath_yaml,
+               eval_spec,
                filepaths_pairs,
                pred_reader_fn,
                experimental_validate_args=False):
     """
     Args:
-      filepath_yaml: a YAML definition from evaluation/defs
+      eval_spec: an EvalSpec object, containing attributes: Nclasses, sp2e_np
       filepaths_pairs: [(path_gt, path_pred), ...], each path_pred will be passed to pred_reader_fn
       pred_reader_fn: a function with a path string as input and a np.ndarray as output and
-        signature: (path_pred) -> (pred_np), pred_np must have values in range [0, Nclasses-1],
-        i.e., the evaluation ids in YAML definition
+        signature: pred_reader_fn(path_pred) -> pred_np,
+        pred_np must have values in range [0, Nclasses-1], i.e. the eval ids in YAML definition
       experimental_validate_args: will perform validation of tensor values to catch errors and show
         meaningful explanations, disabled by default since it is computationally intensive
     """
+    self.spec = eval_spec
     self.filepaths_pairs = filepaths_pairs
     self.pred_reader_fn = pred_reader_fn
     self.experimental_validate_args = experimental_validate_args
 
     self.filepaths_pairs_generator = lambda : (p for p in self.filepaths_pairs)
-    with open(filepath_yaml) as fd:
-      spec = yaml.load(fd, Loader=yaml.Loader)
-    self.sid_pid2eval_id = parse__sid_pid2eid__v2(spec['sid_pid2eid__template'])
-    self.Nclasses = len(set(self.sid_pid2eval_id.values()))
-    # TODO(panos): here we assume that IGNORE eval_id exists and is the max eval_id
-    self.eid_ignore = max(self.sid_pid2eval_id.values())
-    self.sp2e_np = _sparse_ids_mapping_to_dense_ids_mapping(self.sid_pid2eval_id, self.eid_ignore)
+    self.Nclasses = eval_spec.Nclasses
     self.confusion_matrix = np.zeros((self.Nclasses, self.Nclasses), dtype=np.int64)
     self.num_parallel_calls = multiprocessing.cpu_count() - 1
 
@@ -282,7 +277,7 @@ class ConfusionMatrixEvaluator_v2(object):
       fp_gt = fp_gt.numpy().decode('utf-8')
       label_gt = np.asarray(Image.open(fp_gt), dtype=np.int32)
       _, _, _, sids_pids_gt = decode_uids(label_gt, return_sids_pids=True)
-      eids_gt = self.sp2e_np[sids_pids_gt]
+      eids_gt = self.spec.sp2e_np[sids_pids_gt]
       return eids_gt
 
     def _wrapper(fp_pred):

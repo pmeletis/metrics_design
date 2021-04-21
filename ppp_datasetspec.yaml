@@ -129,7 +129,8 @@ scene_classes_with_instances: [
 # information layer for the part-level abstraction, thus the following mappings from the part-level
 # semantic class to the instance-wise pids can be used to remove the instance information layer
 # from the part-level abstraction. The function ... can be used to map all pids for a part class to the
-# respective pid from scene_class2part_classes, e.g. {6, 7, ..., 14, 15} -> 6, {16, 17, ..., 24, 25} -> 7.
+# respective pid from scene_class2part_classes,
+# e.g. aeroplane: {6, 7, ..., 14, 15} -> 6, {16, 17, ..., 24, 25} -> 7.
 countable_parts_grouping: {
   aeroplane: {
     engine: [6, 7, 8, 9, 10, 11, 12, 13, 14, 15],

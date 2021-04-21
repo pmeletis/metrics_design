@@ -6,16 +6,16 @@ ground truth and prediction files. The main components in this script are the fo
   - the `ConfusionMatrixEvaluator` class from panoptic_parts.utils.experimental_evaluation
 
 The `ConfusionMatrixEvaluator` class requires:
-  1. a YAML evaluation definition filepath
+  1. a YAML evaluation specification
   2. a list of ground truth and prediction paths pairs
-  2. a reader function to read prediction paths and optionally convert them to a compatible format
+  3. a reader function to read prediction paths and optionally convert them to a compatible format
      (see `ConfusionMatrixEvaluator` class documentation for more info)
 
-This script generates these requirements as follows:
-  1. The list of paths is created by `filepaths_pairs_fn`, change the function implementation
+This script generates the aboves elements as follows:
+  2. The list of paths is created by `filepaths_pairs_fn`, change the function implementation
      according to your needs, note that `ConfusionMatrixEvaluator` requires only a list of path
      pairs, how it is created is up to the user.
-  2. The reader function reads the predictions from the filepaths into an np.int32, np.ndarray
+  3. The reader function reads the predictions from the filepaths into an np.int32, np.ndarray
      with values in the evaluation ids range in `FILEPATH_EVALUATION_DEF`. We provide an example
      implementation `reader_fn`. Implement your reader function according to your
      predictions values. Definitions from `FILEPATH_EVALUATION_DEF` can be used.
@@ -24,14 +24,14 @@ Examples:
   1. Compute part-level class IoUs and mIoU for Cityscapes Panoptic Parts 24 parts classes:
      a. change `FILEPATH_PATTERN_GT_CPP` and `BASEPATH_PRED` and adapt the `filepaths_pairs_fn`
         function code as needed
-     b. use FILEPATH_EVALUATION_DEF = 'panoptic_parts/evaluation/defs/cpp_parts_24.yaml' and
+     b. use FILEPATH_EVALUATION_DEF = 'cpp_iouparts_24_evalspec.yaml' and
         adapt the `pred_reader_fn` function code as needed
-     c. Run from the top-level directory panoptic_parts this script as:
-        python -m panoptic_parts.evaluation.experimental_eval_segmentation_parts
+     c. Run from the top-level directory this script as:
+        python -m eval_segmentation_parts
 
 
-This is the Tensorflow CPU implementation for faster, concurrent implementation.
-Benchmarks (full resolution):
+This is the Tensorflow 2.x CPU implementation for faster, concurrent implementation.
+Benchmarks (full resolution, Intel® Core™ i9-7900X CPU @ 3.30GHz):
   1. ~35 sec for Cityscapes Panoptic Parts val set evaluation.
   2. ~30 sec for PASCAL Panoptic Parts val set evaluation.
 """
@@ -53,9 +53,10 @@ from panoptic_parts.utils.utils import _sparse_ids_mapping_to_dense_ids_mapping
 from panoptic_parts.utils.format import decode_uids
 from panoptic_parts.utils.experimental_evaluation import (
     ConfusionMatrixEvaluator_v2, parse__sid_pid2eid__v2)
+from eval_spec import SegmentationPartsEvalSpec
 
 
-FILEPATH_EVALUATION_DEF = 'cpp_iouparts_23_evalspec.yaml'
+FILEPATH_EVALUATION_DEF = 'cpp_iouparts_24_evalspec.yaml'
 FILEPATH_PATTERN_GT_CPP = op.join('/home/panos/git/p.meletis/panoptic_parts_datasets', 'tests', 'tests_files',
     'cityscapes_panoptic_parts', 'gtFine_v2', 'val', '*', '*.tif')
 # FILEPATH_PATTERN_GT_PPP = op.join('/home/panos/git/p.meletis/panoptic_parts_datasets', 'tests', 'tests_files',
@@ -93,23 +94,14 @@ def pred_reader_fn(fp_pred, sid_pid2eval_id):
   return eids_pred
 #########
 
-# preparation for evaluation
-with open(FILEPATH_EVALUATION_DEF) as fd:
-  spec = yaml.load(fd, Loader=yaml.Loader)
-sid_pid2eval_id = parse__sid_pid2eid__v2(spec['sid_pid2eid__template'])
-# TODO(panos): here we assume that IGNORE eval_id exists and is the max eval_id
-eid_ignore = max(sid_pid2eval_id.values())
-sp2e_np = _sparse_ids_mapping_to_dense_ids_mapping(sid_pid2eval_id, eid_ignore)
-pred_reader_fn = functools.partial(pred_reader_fn, sid_pid2eval_id=sp2e_np)
-
 # create and run evaluator
-sid_pid2eval_id__values = sid_pid2eval_id.values()
-# ignore_ids = [max(sid_pid2eval_id__values) + 1] if -1 in sid_pid2eval_id__values else list()
-ignore_ids = [eid_ignore]
-names = list(spec['eval_id2scene_part_class'].values())
-evaluator = ConfusionMatrixEvaluator_v2(FILEPATH_EVALUATION_DEF,
+spec = SegmentationPartsEvalSpec(FILEPATH_EVALUATION_DEF)
+pred_reader_fn = functools.partial(pred_reader_fn, sid_pid2eval_id=spec.sp2e_np)
+evaluator = ConfusionMatrixEvaluator_v2(spec,
                                         filepaths_pairs,
                                         pred_reader_fn,
                                         experimental_validate_args=False)
 cm = evaluator.compute_cm()
-evaluator.print_metrics(names=names, printcmd=True, ignore_ids=ignore_ids)
+evaluator.print_metrics(names=spec.scene_part_classes,
+                        printcmd=True,
+                        ignore_ids=[spec.eid_ignore])

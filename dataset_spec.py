@@ -10,11 +10,11 @@ class DatasetSpec(object):
   in the specification are easily accessed. Moreover, it provides defaults and specification checking.
 
   Accessible specification attributes:
-   - l: list, the names of the scene-level semantic class
-   - l_things: list, the names of the scene-level things class
-   - l_stuff: list, the names of the scene-level stuff class
-   - l_parts: list, the names of the scene-level classes with parts
-   - l_noparts: list, the names of the scene-level classes without parts
+   - l: list of str, the names of the scene-level semantic classes
+   - l_things: list of str, the names of the scene-level things classes
+   - l_stuff: list of str, the names of the scene-level stuff classes
+   - l_parts: list of str, the names of the scene-level classes with parts
+   - l_noparts: list of str, the names of the scene-level classes without parts
    - sid2scene_class: dict, mapping from sid to scene-level semantic class name
    - sid2scene_color: dict, mapping from sid to scene-level semantic class color
   
@@ -79,6 +79,6 @@ class DatasetSpec(object):
 
 
 if __name__ == '__main__':
-  # spec = DatasetSpec('/home/panos/git/github/pmeletis/metrics_design/ppp_datasetspec.yaml')
-  spec = DatasetSpec('/home/panos/git/github/pmeletis/metrics_design/cpp_datasetspec.yaml')
+  # spec = DatasetSpec('ppp_datasetspec.yaml')
+  spec = DatasetSpec('cpp_datasetspec.yaml')
   breakpoint()
