@@ -10,9 +10,9 @@ comments:
 # The mapping defines implicitly (by the order of elements) their 1-based ids, e.g.
 # "aeroplane": sid = 1, "aeroplane body": pid = 1. The 0 id is reserved for the "unlabeled" class,
 # which represents unlabeled/void/background/do-not-care pixels, and is omitted for both scene-level
-# and part-level classes, i.e. "unlabeled": sid = 0, "aeroplane unlabeled": pid = 0. The scene-level
-# sids induced by the ordering correspond as-is to the sids in the annotations (ground truth
-# image-like files). The part-level pids induced by the ordering correspond to the pids in the
+# and part-level classes, i.e. "UNLABELED": sid = 0, "aeroplane UNLABELED": pid = 0. It is expected that
+# the scene-level sids induced by the ordering correspond as-is to the sids in the annotations (ground truth
+# tiff files). The part-level pids induced by the ordering correspond to the pids in the
 # annotations after being folded using the countable_parts_grouping mapping.
 scene_class2part_classes: {
   aeroplane: [body, stern, lwing, rwing, tail, engine, wheel],
@@ -123,12 +123,12 @@ scene_classes_with_instances: [
 
 
 # PPP contains instance-wise information for the part-level abstraction for a selection of classes.
-# This is implemented with different part ids for each part-level semantic class per image,
-# e.g. "aeroplace engine" has 10 pids meaning that an image can have up to 10 different unique engine parts,
-# which can belong to multiple aeroplanes. Part-aware Panoptic Segmentation does not require this
+# This is stored in the annotations using different ids for the same part-level semantic class,
+# e.g. "aeroplace engine" has 10 ids meaning that an image can have up to 10 different unique engine parts,
+# which can belong to multiple aeroplanes. The Part-aware Panoptic Segmentation problem does not require this
 # information layer for the part-level abstraction, thus the following mappings from the part-level
 # semantic class to the instance-wise pids can be used to remove the instance information layer
-# from the part-level abstraction. The function ... can be used to map all pids for a part class to the
+# from the part-level abstraction. The function ... can be used to map all ids for a part class to the
 # respective pid from scene_class2part_classes,
 # e.g. aeroplane: {6, 7, ..., 14, 15} -> 6, {16, 17, ..., 24, 25} -> 7.
 countable_parts_grouping: {
@@ -164,7 +164,6 @@ countable_parts_grouping: {
 
 
 scene_class2color: {
-  unlabeled: [0, 0, 0],
   aeroplane: [128, 0, 0],
   bicycle: [0, 128, 0],
   bird: [128, 128, 0],

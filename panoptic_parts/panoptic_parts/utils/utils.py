@@ -176,22 +176,22 @@ def _print_metrics_from_confusion_matrix(cm,
   # printcmd: True to print a summary of metrics to terminal
   # summary: if printfile is not None, prints only a summary of metrics to file
   # ignore_ids: ids in cm to ignore, zero-based
-  #  this is needed for example in the case of unlabeled pixels:
+  #  this is needed for example in the case of UNLABELED pixels:
   #  it will be like pixels with those classes do not exist in the dataset and
   #  predictions in these classes are not made
 
   # Common situations in the CM:
-  # i) there is an "unlabeled" class in the dataset:
-  #   since "unlabeled" pixels is like they do not exist in the dataset we want them
-  #   to be ignored from the metrics, however if the network predicts the "unlabeled"
-  #   class, then some pixels belonging to other classes can be predicted as "unlabeled"
+  # i) there is an "UNLABELED" class in the dataset:
+  #   since "UNLABELED" pixels is like they do not exist in the dataset we want them
+  #   to be ignored from the metrics, however if the network predicts the "UNLABELED"
+  #   class, then some pixels belonging to other classes can be predicted as "UNLABELED"
   # ii) there are some classes that have no pixels in the evaluation dataset,
   #   this results in the row of those classes to have all zeros (tp_fp = 0),
   #   we can safely remove these rows, however we cannot remove the column of these classes
   #   because they act as FP to the other classes
 
   # Solutions:
-  # i) this case involves definition of the user of what is "unlabeled" so it must be
+  # i) this case involves definition of the user of what is "UNLABELED" so it must be
   #   provided in the ignore_ids
   # ii) this case is automatically found (all zero rows) and can be handled
   # For both cases we remove the rows from the CM, and we aggregate the columns into

@@ -49,7 +49,6 @@ scene_classes_with_instances: [
 
 # Refer to ppp_datasetspec for now.
 scene_class2color: {
-  unlabeled: [0, 0, 0],
   ego vehicle: [0, 0, 0],
   rectification border: [0, 0, 0],
   out of roi: [0, 0, 0],
