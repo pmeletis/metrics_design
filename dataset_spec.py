@@ -3,6 +3,7 @@ This module contains tools for handling dataset specifications.
 """
 import copy
 from functools import partial
+from typing import Union
 import platform
 version = platform.python_version()
 if float(version[:3]) <= 3.6:
@@ -17,7 +18,9 @@ class DatasetSpec(object):
   in the specification are easily accessed. Moreover, it provides defaults and specification checking.
 
   Accessible specification attributes:
-    - scene_class2part_classes: 
+    - scene_class2part_classes: dict, mapping for scene-level class name to part-level class names,
+        the ordering of elements in scene_class2part_classes.keys() and scene_class2part_classes.values()
+        implicitly defines the sid and pid respectively, which can be retrieved with the functions below
     - l: list of str, the names of the scene-level semantic classes
     - l_things: list of str, the names of the scene-level things classes
     - l_stuff: list of str, the names of the scene-level stuff classes
@@ -25,6 +28,8 @@ class DatasetSpec(object):
     - l_noparts: list of str, the names of the scene-level classes without parts
     - sid2scene_class: dict, mapping from sid to scene-level semantic class name
     - sid2scene_color: dict, mapping from sid to scene-level semantic class color
+    - sid_pid2scene_class_part_class: dict, mapping from sid_pid to a tuple of
+        (scene-level class name, part-level class name)
     - scene_class_from_sid(sid)
     - sid_from_scene_class(name)
     - part_classes_from_sid(sid)
@@ -58,13 +63,13 @@ class DatasetSpec(object):
       raise ValueError(
           '"scene_class2color" in dataset_spec must be provided for now. '
           'In the future random color assignment will be implemented.')
-    self._countable_parts_grouping = spec.get('countable_parts_grouping')
+    self._countable_pids_groupings = spec.get('countable_pids_groupings')
 
     self._extract_useful_attributes()
 
   def _extract_useful_attributes(self):
 
-    def _check_and_append_unlabeled(seq, unlabeled_dct=None):
+    def _check_and_append_unlabeled(seq: Union[dict, list], unlabeled_dct=None):
       seq = copy.copy(seq)
       if 'UNLABELED' not in seq:
         if isinstance(seq, dict):
@@ -88,6 +93,10 @@ class DatasetSpec(object):
     self.scene_class2color = _check_and_append_unlabeled(self._scene_class2color,
                                                          {'UNLABELED': [0, 0, 0]})
 
+    if self._countable_pids_groupings is not None:
+      # TODO(panos): to be implemented
+      pass
+
     self.l = list(self.scene_class2part_classes)
     self.l_things = self._scene_classes_with_instances
     self.l_stuff = list(set(self.l) - set(self.l_things))
@@ -98,6 +107,13 @@ class DatasetSpec(object):
     self.sid2scene_color = {sid: self.scene_class2color[name] for sid, name in self.sid2scene_class.items()}
     self.sid2part_classes = {sid: part_classes
                              for sid, part_classes in enumerate(self.scene_class2part_classes.values())}
+
+    # TODO(panos): this dict does not include the sid only mappings, are they needed?
+    self.sid_pid2scene_class_part_class = dict()
+    for sid, (scene_class, part_classes) in enumerate(self.scene_class2part_classes.items()):
+      for pid, part_class in enumerate(part_classes):
+        sid_pid = sid * 100 + pid
+        self.sid_pid2scene_class_part_class[sid_pid] = (scene_class, part_class)
 
   def sid_from_scene_class(self, name):
     return self.l.index(name)

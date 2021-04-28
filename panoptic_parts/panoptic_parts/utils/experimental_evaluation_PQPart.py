@@ -221,6 +221,9 @@ def annotation_parsing(sample, cat_definition, thresh=0):
 
   h, w = sample.shape
 
+  # TODO(panos, chenyang): replace this with decode_uids
+  # the difference is that instead of -1 for invalid positions,
+  # this code uses 0
   sem_map = np.where(sample <= 99,
                sample,
                np.where(sample <= 99_999,

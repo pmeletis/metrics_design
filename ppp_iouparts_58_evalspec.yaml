@@ -4,7 +4,7 @@ comments:
   - we use the grouping and indexing used in [X, X, X]
 
 
-# TODO(panos): simplify this using countable_parts_groupings, which will reduce the length of this mapping
+# TODO(panos): simplify this using countable_pids_groupings, which will reduce the length of this mapping
 sid_pid2eid__template: {
   # evaluated
   1_01: 1, 1_02: 4, 1_03: 3, 1_04: 3, 1_05: 4,
