@@ -91,7 +91,7 @@ class DatasetSpec(object):
     self.l = list(self.scene_class2part_classes)
     self.l_things = self._scene_classes_with_instances
     self.l_stuff = list(set(self.l) - set(self.l_things))
-    self.l_parts = list(filter(lambda k: bool(self.scene_class2part_classes[k]),
+    self.l_parts = list(filter(lambda k: len(self.scene_class2part_classes[k]) >= 2,
                                self.scene_class2part_classes))
     self.l_noparts = list(set(self.l) - set(self.l_parts))
     self.sid2scene_class = dict(enumerate(self.l))
