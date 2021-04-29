@@ -5,7 +5,8 @@ import random
 import numpy as np
 from PIL import Image
 
-from panoptic_parts.utils.format import decode_uids, encode_ids
+# cyclic import
+# from panoptic_parts.utils.format import decode_uids, encode_ids
 
 # Functions that start with underscore (_) should be considered as internal.
 # All other functions belong to the public API.

@@ -1,6 +1,7 @@
 import sys
 assert float(sys.version[:3]) >= 3.7, 'This test uses Python >= 3.7 functionality.'
 import functools
+import copy
 
 import numpy as np
 import tensorflow as tf
@@ -49,6 +50,7 @@ def decode_uids_cases():
   ersipT = {'return_sids_iids': True, 'return_sids_pids': True}
   # examples = [example, ...]
   # example = [inputs, outputs] = [[args, kwargs], outputs]
+  # examples = [ [ [args, kwargs], outputs ], ... ]
   examples = [
       [[(1,), {}], (1, -1, -1)],
       [[(1,), ersiT], (1, -1, -1, 1)],
@@ -86,6 +88,17 @@ def decode_uids_cases():
       functools.partial(torch.tensor, dtype=torch.int32)
   ]
 
+  class dataset_spec:
+    _sid_pid_file2sid_pid = {1_03: 1_04, 11_03: 11_05}
+  ersipTd = copy.copy(ersipT)
+  ersipTd['experimental_dataset_spec'] = dataset_spec
+  more_examples = [
+      [[(1_002_03,), ersipT], (1, 2, 3, 1002, 103)],
+      [[(1_002_03,), ersipTd], (1, 2, 4, 1002, 104)],
+      [[(11_002_03,), ersipT], (11, 2, 3, 11002, 1103)],
+      [[(11_002_03,), ersipTd], (11, 2, 5, 11002, 1105)],
+  ]
+
   # cases: [[inputs, outputs], ...] = [[[args, kwargs], outputs], ...]
   cases = list()
   for example in examples:
@@ -93,7 +106,13 @@ def decode_uids_cases():
       inputs = [(type_fn(example[0][0][0]),), example[0][1]]
       outputs = (*map(type_fn, example[1]),)
       cases.append([inputs, outputs])
-  
+
+  type_nparray = functools.partial(np.array, dtype=np.int32)
+  for more_example in more_examples:
+    inputs = [(type_nparray(more_example[0][0][0]),), more_example[0][1]]
+    outputs = (*map(type_nparray, more_example[1]),)
+    cases.append([inputs, outputs])
+
   return cases
 
 def decode_uids_test(cases):
@@ -121,7 +140,7 @@ def decode_uids_test(cases):
     results = decode_uids(*case[0][0], **case[0][1])
     # print(results, case[1])
     if not _equal(results, case[1]):
-      print(case, results)
+      print('case failed:', case, results)
   print(f"decode_uids: {len(cases)} test cases completed successfully.")
 
 if __name__ == "__main__":
