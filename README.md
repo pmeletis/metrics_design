@@ -32,15 +32,14 @@
    - eval_segmentation_parts.py
 
 ## ToDo's
- - functionalize eval_segmentation_parts and rename it
+ - add eval spec and test PPQ metric for PPP
+ - welcome page and CVPR READMEs
+ - refactor eval_* scripts
  - add official eval specs for CPP and PPP
- - add eval_ppq.py
- - add eval specs for PPQ metric
- - dataset and CVPR READMEs
 
 ## Proposed Timeline
- - 28/04: Finalize ToDo's
- - 30/04: Complete internal testing by three of us
- - 02/05: Publish repo
- - 04/05: Upload CVPR to arxiv
+ - 30/04: Finalize ToDo's
+ - 02/05: Complete internal testing by three of us
+ - 04/05: Publish repo
+ - 05/05: Upload CVPR to arxiv
  - 18/05: Update Tech report on arxiv
