@@ -33,6 +33,7 @@
 
 ## ToDo's
  - add eval spec and test PPQ metric for PPP
+ - remove the generate_ignore_info and requirements (gt_panoptic_dict, panoptic_ann_img, image_id) as this info can be extracted from tiff + dataset_spec
  - welcome page and CVPR READMEs
  - refactor eval_* scripts
  - add official eval specs for CPP and PPP
