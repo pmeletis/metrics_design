@@ -19,26 +19,24 @@
  - Dataset specifications
    - ppp_datasetspec.yaml
    - cpp_datasetspec.yaml
-   - dataset_spec.py
  - Evaluation specifications
-   - cpp_iouparts_9_evalspec.yaml
-   - cpp_iouparts_10_evalspec.yaml
-   - cpp_iouparts_23_evalspec.yaml
-   - cpp_iouparts_24_evalspec.yaml
-   - ppp_iouparts_7_evalspec.yaml
-   - ppp_iouparts_58_evalspec.yaml
+   - cpp_iouparts_{9, 10, 23, 24}_evalspec.yaml
+   - ppp_iouparts_{7, 58}_evalspec.yaml
+   - cpp_partPQ_24_evalspec.yaml
+ - Specification parsing
+   - dataset_spec.py
    - eval_spec.py
  - Evaluation scripts
    - eval_segmentation_parts.py
+   - eval_PQPart.py
 
 ## ToDo's
  - add eval spec and test PPQ metric for PPP
  - remove the generate_ignore_info and requirements (gt_panoptic_dict, panoptic_ann_img, image_id) as this info can be extracted from tiff + dataset_spec
  - welcome page and CVPR READMEs
  - refactor eval_* scripts
- - add official eval specs for CPP and PPP
 
-## Proposed Timeline
+## Timeline
  - 30/04: Finalize ToDo's
  - 02/05: Complete internal testing by three of us
  - 04/05: Publish repo
