@@ -6,6 +6,7 @@
    sids, iids, pids = decode_uids(uids, experimental_dataset_spec=DatasetSpec(yaml_path))
    ```
    With this change original pids in the PPP annotations for e.g. aeroplane engine pids: {6, 7, ..., 14, 15} will all become 6, which is the pid defined by the `scene_class2part_classes` field in yaml. FYI: the sid_pid can be retrieved by `dataset_spec.sid_pid_from_scene_class_part_class('aeroplane', 'engine')` → 1_06.
+ - UPDATE 26/04: Extended the documentation for DatasetSpec class with examples.
  - UPDATE 15/04: It seems that it's handier to include the dataset spec path inside the eval_spec, so the evaluation function can have the following signature (using Python typing package):
 
    ```python
