@@ -22,6 +22,8 @@ try:
 except ModuleNotFoundError:
   pass
 
+from panoptic_parts.utils.utils import _sparse_ids_mapping_to_dense_ids_mapping
+
 # Functions that start with underscore (_) should be considered as internal.
 # All other functions belong to the public API.
 # Arguments and functions defined with the preffix experimental_ may be changed
@@ -93,7 +95,8 @@ def _decode_uids_functors_and_checking(uids):
 
   raise TypeError(f'{type(uids)} is an unsupported type of uids.')
 
-def decode_uids(uids, return_sids_iids=False, return_sids_pids=False):
+def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
+                experimental_null_id=-1, experimental_dataset_spec=None):
   """
   Given the universal ids `uids` according to the hierarchical format described
   in README, this function returns element-wise
@@ -153,10 +156,31 @@ def decode_uids(uids, return_sids_iids=False, return_sids_pids=False):
   # split uids to components (sids, iids, pids) from right to left
   sids_iids, pids = divmod_(uids_padded, dtype(10**2))
   sids, iids = divmod_(sids_iids, dtype(10**3))
-  invalid_ids = ones_like(uids) * dtype(-1)
+  invalid_ids = ones_like(uids) * dtype(experimental_null_id)
   # set invalid ids
   iids = where(uids <= 99, invalid_ids, iids)
   pids = where(uids <= 99_999, invalid_ids, pids)
+
+  # This applies to PASCAL Panoptic Parts and removes the
+  # part-level instance information layer
+  # TODO(panos): change the experimental_dataset_spec to something else
+  # because decode_uids may be used in other places, other than reading GT files
+  # possible solution: keep only a flag to convert and make the dataset_spec script constant
+  if (experimental_dataset_spec is not None and
+      hasattr(experimental_dataset_spec, '_sid_pid_file2sid_pid')):
+    if not isinstance(uids, np.ndarray):
+      raise NotImplementedError(
+          f'sid_pid from file mapping is only supported for np.ndarray for now. '
+          f'Found {type(uids)}.')
+    # spf2sp: contains 3/4-digit sid_pid mappings
+    spf2sp = experimental_dataset_spec._sid_pid_file2sid_pid
+    sids_pids = sids * dtype(10**2) + maximum(pids, dtype(0))
+    spf2sp__dense = _sparse_ids_mapping_to_dense_ids_mapping(spf2sp, -100, length=10000)
+    sids_pids = spf2sp__dense[sids_pids]
+    assert not np.any(np.equal(sids_pids, -100)), (
+        'experimental_dataset_spec._sid_pid_file2sid_pid does not contain all pids in GT.')
+    pids = sids_pids % 100
+    pids = where(uids <= 99_999, invalid_ids, pids)
 
   if isinstance(uids, np.ndarray):
     sids = np.asarray(sids, dtype=np.int32)
@@ -167,6 +191,7 @@ def decode_uids(uids, return_sids_iids=False, return_sids_pids=False):
     returns += (sids_iids,)
 
   if return_sids_pids:
+    # TODO(panos): introduces 1_00 (zeros), is this preferred?
     sids_pids = sids * dtype(10**2) + maximum(pids, dtype(0))
     if isinstance(uids, np.ndarray):
       sids_pids = np.asarray(sids_pids, dtype=np.int32)
