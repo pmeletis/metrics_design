@@ -1,12 +1,17 @@
 # Evaluation code design
 
 ## Updates
+ - UPDATE 29/04: The decode_uids function provides now mapping of the part-level instance information layer (a.k.a instance-wise parts per things class) by providing the dataset_spec as:
+   ```python
+   sids, iids, pids = decode_uids(uids, experimental_dataset_spec=DatasetSpec(yaml_path))
+   ```
+   With this change original pids in the PPP annotations for e.g. aeroplane engine pids: {6, 7, ..., 14, 15} will all become 6, which is the pid defined by the `scene_class2part_classes` field in yaml. FYI: the sid_pid can be retrieved by `dataset_spec.sid_pid_from_scene_class_part_class('aeroplane', 'engine')` → 1_06.
  - UPDATE 15/04: It seems that it's handier to include the dataset spec path inside the eval_spec, so the evaluation function can have the following signature (using Python typing package):
 
    ```python
-    evaluate_metric(eval_spec_path: str,
-                    gt_preds_paths: List[Tuple[str, str]]
-    ) -> Dict[str, Union[float, list]]
+   evaluate_metric(eval_spec_path: str,
+                   gt_preds_paths: List[Tuple[str, str]]
+   ) -> Dict[str, Union[float, list]]
    ```
 
 ## Almost finalized
