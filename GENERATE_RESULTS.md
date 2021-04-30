@@ -29,7 +29,11 @@ For the datasets that we define and use in our paper, we provide the `EvalSpec` 
 * `cpp_PartPQ_evalspec_grouped.yaml`: Cityscapes Panoptic Parts default (similar parts grouped)
 * `ppp_PartPQ_evalspec_default.yaml`: Panoptic Panoptic Parts default
 
-**TODO: rename files to proper names**
+**TMP. TODO: rename these to proper names.** For now, while WIP:
+* `[WIP]cpp_official_evalspec.yaml`: Cityscapes Panoptic Parts default (parts not grouped)
+* `[WIP]cpp_official_evalspec_grouped.yaml`: Cityscapes Panoptic Parts default (similar parts grouped)
+* `[WIP]ppp_official_evalspec.yaml`: Panoptic Panoptic Parts default
+
 
 Using these `EvalSpec` definitions, we map the label definition for the raw ground-truth to the definition that we use for evaluation.
 **NOTE**: This `EvalSpec` also determines how our merging and evaluation code expects the predictions. 
@@ -147,17 +151,17 @@ To merge to panoptic, run the following script
 
 ```
 merge_to_panoptic.merge(eval_spec_path,
-                        inst_pred_dir,
-                        sem_pred_dir,
+                        inst_pred_path,
+                        sem_pred_path,
                         output_dir,
-                        panoptic_json,
+                        images_json,
                         instseg_format=instseg_format)
 
 # eval_spec_path: path to the EvalSpec
-# inst_pred_dir: directory where the instance segmentation predictions are stored
-# sem_pred_dir: directory where the semantic segmentation predictions are stored
+# inst_pred_dir: path where the instance segmentation predictions are stored (a directory when instseg_format='Cityscapes', a JSON file when instseg_format='COCO')
+# sem_pred_path: path where the semantic segmentation predictions are stored
 # output_dir: directory where you wish to store the panoptic segmentation predictions
-# panoptic_json: the json file with a list of images and corresponding images ids (TODO: generate)
+# images_json: the json file with a list of images and corresponding images ids (TODO: generate)
 # instseg_format: instance segmentation encoding format (either 'COCO' or 'Cityscapes')
 ```
 

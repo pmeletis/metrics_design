@@ -57,7 +57,7 @@ def _create_categories_list(eval_spec):
     category_dict['id'] = eval_id
     category_dict['name'] = eval_spec.eval_sid2scene_label[eval_id]
     # TODO(daan): get function in eval_spec to get (color_from_eval_id) functionality
-    category_dict['color'] = eval_spec.dataset_spec.scene_class2color[category_dict['name']]
+    category_dict['color'] = eval_spec.dataset_spec.sid2scene_color[eval_id]
     if eval_id in eval_spec.eval_sid_things:
       category_dict['isthing'] = 1
     else:
@@ -71,6 +71,7 @@ def merge(eval_spec_path,
           panoptic_pred_dir,
           panoptic_pred_json,
           part_pred_path,
+          images_json,
           output_dir):
   """
 
@@ -86,6 +87,11 @@ def merge(eval_spec_path,
   """
   eval_spec = PPSEvalSpec(eval_spec_path)
 
+  # If the output directory does not exist, create it
+  if not os.path.exists(output_dir):
+    print("Creating output directory at {}".format(output_dir))
+    os.mkdir(output_dir)
+
   # Get category information from EvalSpec
   categories_list = _create_categories_list(eval_spec)
   categories_json = os.path.join(output_dir, 'categories.json')
@@ -98,33 +104,40 @@ def merge(eval_spec_path,
   # Get the void label from the EvalSpec definition
   void = eval_spec.ignore_label
 
-  # Load list of images with their properties
+  # Load list of images in data split
+  with open(images_json, 'r') as fp:
+    images_dict = json.load(fp)
+  images_list = images_dict['images']
+
+  # Load list of panoptic predictions
   with open(panoptic_pred_json, 'r') as fp:
     panoptic_dict = json.load(fp)
-
-  # If the output directory does not exist, create it
-  if not os.path.exists(output_dir):
-    print("Creating output directory at {}".format(output_dir))
-    os.mkdir(output_dir)
 
   # Prepare the mappings from predictions to evaluation and vice versa
   sids2part_seg_ids, part_seg_ids2eval_pids_per_sid = _prepare_mappings(sid_pid2part_seg_label, void)
 
   # Load panoptic annotations
   annotations = panoptic_dict['annotations']
+  annotations_id_list = [annotation['image_id'] for annotation in annotations]
 
   # Get filenames in directory with part segmentation predictions
   fn_partseg = get_filenames_in_dir(part_pred_path)
 
-  annotation_count = 0
   print("Merging panoptic and part predictions to PPS, and saving...")
   # TODO(daan): implement a check to see whether the image set correponds with image set from images.json (to be created)
-  for annotation in tqdm(annotations):
-    annotation_count += 1
-    file_name = annotation['file_name']
-    image_id = annotation['image_id']
+  for image_info in tqdm(images_list):
+    image_id = image_info['id']
 
-    f_partseg = find_filename_in_list(image_id, fn_partseg, 'part seg')
+    # Because the panopticapi converts strings to integers when possible, we have to check two cases
+    if image_id in annotations_id_list:
+      annotation_index = annotations_id_list.index(image_id)
+    elif int(image_id) in annotations_id_list:
+      annotation_index = annotations_id_list.index(int(image_id))
+    else:
+      raise FileNotFoundError('No panoptic prediction found for image id {}'.format(image_id))
+
+    annotation = annotations[annotation_index]
+    file_name = annotation['file_name']
 
     # Load and decode panoptic predictions
     pred_pan = np.array(Image.open(os.path.join(panoptic_pred_dir, file_name)))
@@ -132,6 +145,7 @@ def merge(eval_spec_path,
     h, w = pred_pan.shape[0], pred_pan.shape[1]
 
     # Load part predictions
+    f_partseg = find_filename_in_list(image_id, fn_partseg, 'partseg')
     pred_part = np.array(Image.open(f_partseg))
 
     class_canvas = np.ones((h, w), dtype=np.int32) * void
@@ -191,15 +205,34 @@ def merge(eval_spec_path,
 if __name__ == '__main__':
   # TODO(daan): inlcude args to run from command line
   eval_spec_path = "/home/ddegeus/nvme/projects/metrics_design/[WIP]cpp_official_evalspec.yaml"
+  images_json = "/home/ddegeus/hdnew/dataset/CityscapesPanParts/gtFinePanopticParts_trainval/gtFinePanopticParts/val/images.json"
 
   panoptic_pred_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test/panoptic"
   panoptic_pred_json = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test/panoptic.json"
-  part_pred_path = '/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/cityscapes/partseg/bsanet/parts_ungrouped/pred_val'
+  part_pred_path = '/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/cityscapes/partseg/deeplabv3_plus/parts_ungrouped/pred_val'
 
-  output_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_pps/test"
+
+  output_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_pps/cs_ss_is_common_ps_common_ungrouped"
 
   merge(eval_spec_path,
         panoptic_pred_dir,
         panoptic_pred_json,
         part_pred_path,
+        images_json,
         output_dir)
+
+  # eval_spec_path = "/home/ddegeus/nvme/projects/metrics_design/[WIP]ppp_official_evalspec.yaml"
+  # images_json = "/home/ddegeus/datasets_other/pascal_panoptic_parts_v1/validation/images.json"
+  #
+  # panoptic_pred_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test_pascal/panoptic"
+  # panoptic_pred_json = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test_pascal/panoptic.json"
+  # part_pred_path = '/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/pascal/partseg/deeplabv3_plus/ungrouped/pred_val'
+  #
+  # output_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_pps/test_pascal"
+  #
+  # merge(eval_spec_path,
+  #       panoptic_pred_dir,
+  #       panoptic_pred_json,
+  #       part_pred_path,
+  #       images_json,
+  #       output_dir)

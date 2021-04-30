@@ -1,9 +1,11 @@
 import json
 import glob
 import os
+from tqdm import tqdm
 from PIL import Image
 
 def create_image_list(dataset_dir, output_dir, dataset=None):
+  print("Creating images list...")
   images_list = list()
 
   # Get all filenames in the GT directory
@@ -11,7 +13,7 @@ def create_image_list(dataset_dir, output_dir, dataset=None):
   if dataset == 'Cityscapes':
     filenames.extend([file for file in glob.glob(dataset_dir + "/*/*")])
 
-  for filename in filenames:
+  for filename in tqdm(filenames):
     if filename.endswith(str('.tif')):
       image_dict = dict()
       file_name_gt = os.path.basename(filename)
@@ -43,7 +45,12 @@ def create_image_list(dataset_dir, output_dir, dataset=None):
 
 if __name__ == '__main__':
   # TODO(daan): inlcude args to run from command line
-  dataset_dir = "/home/ddegeus/hdnew/dataset/CityscapesPanParts/gtFinePanopticParts_trainval/gtFinePanopticParts/val"
-  output_dir = "/home/ddegeus/hdnew/dataset/CityscapesPanParts/gtFinePanopticParts_trainval/gtFinePanopticParts/val"
+  # dataset_dir = "/home/ddegeus/hdnew/dataset/CityscapesPanParts/gtFinePanopticParts_trainval/gtFinePanopticParts/val"
+  # output_dir = "/home/ddegeus/hdnew/dataset/CityscapesPanParts/gtFinePanopticParts_trainval/gtFinePanopticParts/val"
+  #
+  # create_image_list(dataset_dir, output_dir, dataset='Cityscapes')
 
-  create_image_list(dataset_dir, output_dir, dataset='Cityscapes')
+  dataset_dir = "/home/ddegeus/datasets_other/pascal_panoptic_parts_v1/validation/parts"
+  output_dir = "/home/ddegeus/datasets_other/pascal_panoptic_parts_v1/validation/"
+
+  create_image_list(dataset_dir, output_dir, dataset='Pascal')

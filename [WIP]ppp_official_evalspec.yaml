@@ -1,0 +1,92 @@
+version: 1.0
+comments:
+ First version containing all information I (Daan) think is necessary for merging to panoptic and part-aware panoptic (and it should also be usable for PartPQ evaluation)
+
+dataset_spec_path: ppp_datasetspec.yaml
+
+# To be used for evaluation
+ignore_label: 255
+
+# To be used for evaluation
+dataset_sid2eval_sid: {
+  # evaluated
+  1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8,
+  9: 9, 10: 10, 11: 11, 12: 12, 13: 13, 14: 14, 15: 15,
+  16: 16, 17: 17, 18: 18, 19: 19, 20: 20, 21: 21, 23: 23,
+  25: 25, 28: 28, 34: 34, 35: 35, 38: 38, 39: 39, 40: 40,
+  42: 42, 45: 45, 46: 46, 48: 48, 49: 49, 50: 50, 53: 53,
+  54: 54, 56: 56, 58: 58, 62: 62, 63: 63, 43: 43, 70: 70,
+  82: 82, 69: 69, 74: 74, 75: 75, 80: 80, 81: 81, 84: 84,
+  86: 86, 24: 24, 92: 92, 93: 93, 94: 94, 95: 95, 96: 96,
+  97: 97, 99: 99,
+  # ignored
+  0: IGNORED, 22: IGNORED, 26: IGNORED, 27: IGNORED, 29: IGNORED, 30: IGNORED, 
+  31: IGNORED, 32: IGNORED, 33: IGNORED, 36: IGNORED, 37: IGNORED, 41: IGNORED, 
+  44: IGNORED, 47: IGNORED, 51: IGNORED, 52: IGNORED, 55: IGNORED, 57: IGNORED, 
+  59: IGNORED, 60: IGNORED, 61: IGNORED, 64: IGNORED, 65: IGNORED, 66: IGNORED, 
+  67: IGNORED, 68: IGNORED, 71: IGNORED, 72: IGNORED, 73: IGNORED, 76: IGNORED, 
+  77: IGNORED, 78: IGNORED, 79: IGNORED, 83: IGNORED, 85: IGNORED, 87: IGNORED, 
+  88: IGNORED, 89: IGNORED, 90: IGNORED, 91: IGNORED, 98: IGNORED,
+  
+  # default
+  DEFAULT: IGNORED
+}
+
+# To be used for evaluation
+dataset_sid_pid2eval_sid_pid: {
+  # evaluated
+  # TODO(panos): use yaml to define this, see Cityscapes EvalSpec for example
+  # ignored
+  # TODO(panos): use yaml to define this, see Cityscapes EvalSpec for example
+  # default
+  DEFAULT: IGNORED
+}
+
+# Used for merging and evaluation
+eval_sid_things: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+eval_sid_stuff: [21, 23, 25, 28, 34, 35, 38, 39, 40, 42, 45, 46, 48, 49, 50, 53, 54, 56, 58, 62, 63, 43, 70, 82, 69, 74, 75, 80, 81, 84, 86, 24, 92, 93, 94, 95, 96, 97, 99]
+eval_sid_parts: [1, 2, 3, 5, 6, 7, 8, 10, 12, 13, 14, 15, 16, 17, 20]
+eval_sid_no_parts: [4, 9, 11, 18, 19, 21, 23, 25, 28, 34, 35, 38, 39, 40, 42, 45, 46, 48, 49, 50, 53, 54, 56, 58, 62, 63, 43, 70, 82, 69, 74, 75, 80, 81, 84, 86, 24, 92, 93, 94, 95, 96, 97, 99]
+
+# Used for merging panoptic & parts
+eval_sid_pid2eval_pid_flat: {
+   1_01: 1, 1_02: 2, 1_03: 3, 1_04: 4, 1_05: 5,
+   2_01: 6, 2_02: 7,
+   3_01: 8, 3_02: 9, 3_03: 10, 3_04: 11,
+   4_01: 12,
+   5_01: 13, 5_02: 14,
+   6_01: 15, 6_02: 16, 6_03: 17,
+   7_01: 18, 7_02: 19, 7_03: 20, 7_04: 21, 7_05: 22,
+   8_01: 23, 8_02: 24, 8_03: 25, 8_04: 26,
+   9_01: 27,
+   10_01: 28, 10_02: 29, 10_03: 30, 10_04: 31,
+   11_01: 32,
+   12_01: 33, 12_02: 34, 12_03: 35, 12_04: 36,
+   13_01: 37, 13_02: 38, 13_03: 39, 13_04: 40,
+   14_01: 41, 14_02: 42,
+   15_01: 43, 15_02: 44, 15_03: 45, 15_04: 46, 15_05: 47, 15_06: 48,
+   16_01: 49, 16_02: 50,
+   17_01: 51, 17_02: 52, 17_03: 53,
+   18_01: 54,
+   19_01: 55,
+   20_01: 56, 20_02: 57
+}
+
+
+# Names for all labels that are to be evaluated
+eval_sid2scene_label: {
+  # TODO(panos): get actual labels (see Cityscapes EvalSpec for example)
+ 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8,
+ 9: 9, 10: 10, 11: 11, 12: 12, 13: 13, 14: 14, 15: 15,
+ 16: 16, 17: 17, 18: 18, 19: 19, 20: 20, 21: 21, 23: 23,
+ 25: 25, 28: 28, 34: 34, 35: 35, 38: 38, 39: 39, 40: 40,
+ 42: 42, 45: 45, 46: 46, 48: 48, 49: 49, 50: 50, 53: 53,
+ 54: 54, 56: 56, 58: 58, 62: 62, 63: 63, 43: 43, 70: 70,
+ 82: 82, 69: 69, 74: 74, 75: 75, 80: 80, 81: 81, 84: 84,
+ 86: 86, 24: 24, 92: 92, 93: 93, 94: 94, 95: 95, 96: 96,
+ 97: 97, 99: 99,
+}
+
+eval_pid_flat2scene_part_label: {
+  # TODO(panos): get actual labels (see Cityscapes EvalSpec for example)
+}

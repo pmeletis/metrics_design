@@ -21,7 +21,7 @@ def _create_categories_list(eval_spec):
     category_dict['id'] = eval_id
     category_dict['name'] = eval_spec.eval_sid2scene_label[eval_id]
     # TODO(daan): get function in eval_spec to get (color_from_eval_id) functionality
-    category_dict['color'] = eval_spec.dataset_spec.scene_class2color[category_dict['name']]
+    category_dict['color'] = eval_spec.dataset_spec.sid2scene_color[eval_id]
     if eval_id in eval_spec.eval_sid_things:
       category_dict['isthing'] = 1
     else:
@@ -129,11 +129,10 @@ def merge(eval_spec_path,
   Returns:
 
   """
-
-  eval_spec = PPSEvalSpec(eval_spec_path)
-
   assert instseg_format in ['Cityscapes', 'COCO'], \
     "instseg_format should be \'Cityscapes\' or \'COCO\'"
+
+  eval_spec = PPSEvalSpec(eval_spec_path)
 
   # If the output directory does not exist, create it
   if not os.path.exists(output_dir):
@@ -169,6 +168,7 @@ def merge(eval_spec_path,
   stuff_labels = eval_spec.eval_sid_stuff
   sem_pred_list = _stuff_segmentation_to_coco(sem_pred_path, images_list, stuff_labels=stuff_labels)
 
+  # TODO(daan): save these in a subfolder, together with categories.json
   instseg_json_file = os.path.join(output_dir, 'inst_pred.json')
   with open(instseg_json_file, 'w') as fp:
     json.dump(inst_pred_list, fp)
@@ -208,3 +208,18 @@ if __name__ == '__main__':
         output_dir,
         images_json,
         instseg_format=instseg_format)
+
+  # eval_spec_path = "/home/ddegeus/nvme/projects/metrics_design/[WIP]ppp_official_evalspec.yaml"
+  # inst_pred_dir = "/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/pascal/instseg/mask r-cnn/pred_val/test_results.segm.json"
+  # sem_pred_dir = "/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/pascal/semseg/deeplabv3/pred_val_orig_sids"
+  # images_json = "/home/ddegeus/datasets_other/pascal_panoptic_parts_v1/validation/images.json"
+  #
+  # output_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test_pascal/"
+  # instseg_format = 'COCO'
+  #
+  # merge(eval_spec_path,
+  #       inst_pred_dir,
+  #       sem_pred_dir,
+  #       output_dir,
+  #       images_json,
+  #       instseg_format=instseg_format)

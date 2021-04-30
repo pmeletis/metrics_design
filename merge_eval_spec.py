@@ -60,13 +60,10 @@ class PPSEvalSpec(object):
 
     # Evaluation scene+part ids -> Evaluation flat part ids (for 'flat' part segmentation)
     self.eval_sid_pid2eval_pid_flat = espec['eval_sid_pid2eval_pid_flat']
-    self.eval_sid_pid2eval_pid_flat_grouped = espec['eval_sid_pid2eval_pid_flat_grouped']
 
     # Evaluation ids -> Labels
     self.eval_sid2scene_label = espec['eval_sid2scene_label']
     self.eval_pid_flat2scene_part_label = espec['eval_pid_flat2scene_part_label']
-    self.eval_pid_flat_grouped2scene_part_label_grouped = espec['eval_pid_flat_grouped2scene_part_label_grouped']
-
     self._extract_useful_attributes()
 
   def _extract_useful_attributes(self):

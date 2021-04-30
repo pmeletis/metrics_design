@@ -3,7 +3,7 @@ import glob
 
 def get_filenames_in_dir(directory):
   filenames = [file for file in glob.glob(directory + "/*")]
-  # filenames.extend([file for file in glob.glob(dir + "/*/*")])
+  filenames.extend([file for file in glob.glob(directory + "/*/*")])
   return filenames
 
 
