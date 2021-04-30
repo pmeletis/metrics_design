@@ -43,13 +43,12 @@ eval_sid_no_parts: [7, 8, 11, 12, 13, 17, 19, 20, 21, 22, 23, 31, 32, 33]
 
 # Used for merging panoptic & parts
 eval_sid_pid2eval_pid_flat: {
-  24_01: 1,  24_02: 2,  24_03: 3,  24_04: 4,
-  25_01: 5,  25_02: 6,  25_03: 7,  25_04: 8,
-  26_01: 9,  26_02: 10, 26_03: 11, 26_04: 12, 26_05: 13,
-  27_01: 14, 27_02: 15, 27_03: 16, 27_04: 17, 27_05: 18,
-  28_01: 19, 28_02: 20, 28_03: 21, 28_04: 22, 28_05: 23,
+  24_01: 1, 24_02: 2, 24_03: 3, 24_04: 4,
+  25_01: 1, 25_02: 2, 25_03: 3, 25_04: 4,
+  26_01: 5, 26_02: 6, 26_03: 7, 26_04: 8, 26_05: 9,
+  27_01: 5, 27_02: 6, 27_03: 7, 27_04: 8, 27_05: 9,
+  28_01: 5, 28_02: 6, 28_03: 7, 28_04: 8, 28_05: 9,
 }
-
 
 # Names for all labels that are to be evaluated
 eval_sid2scene_label: {
@@ -61,9 +60,6 @@ eval_sid2scene_label: {
 }
 
 eval_pid_flat2scene_part_label: {
-  1: person-torso, 2: person-head, 3: person-arms, 4: person-legs,
-  5: rider-torso, 6: rider-head, 7: rider-arms, 8: rider-legs,
-  9: car-windows, 10: car-wheels, 11: car-lights, 12: car-license_plate, 13: car-chassis,
-  14: truck-windows, 15: truck-wheels, 16: truck-lights, 17: truck-license_plate, 18: truck-chassis,
-  19: bus-windows, 20: bus-wheels, 21: bus-lights, 22: bus-license_plate, 23: bus-chassis,
+  1: human-torso, 2: human-head, 3: human-arms, 4: human-legs,
+  5: vehicle-windows, 6: vehicle-wheels, 7: vehicle-lights, 8: vehicle-license_plate, 9: vehicle-chassis,
 }
