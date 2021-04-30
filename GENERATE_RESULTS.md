@@ -4,11 +4,11 @@ Here, we provide a guide for generating Part-aware Panoptic Segmentation (PPS) r
 
 ### To do
 
-####To check:
+**To check**:
  - mIOU evaluator (check that results are the same that we get in the paper)
  - Check that sofa and other things classes with only 1 part are not evaluated at part-level, and also not merged at part-level, because that makes no sense.
 
-####TODO:
+**TODO**:
 - Check all functionality also for Pascal!
 - Check that sofa and other things classes with only 1 part are not evaluated at part-level, and also not merged at part-level, because that makes no sense.
 - Create official_evalspec for Pascal

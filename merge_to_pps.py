@@ -92,7 +92,6 @@ def merge(eval_spec_path,
   with open(categories_json, 'w') as fp:
     json.dump(categories_list, fp)
 
-  # TODO(daan): in the README, we should indicate that another def is necessary for 'grouped' parts
   # Get the sid_pid -> part_seg mapping from the EvalSpec
   sid_pid2part_seg_label = eval_spec.eval_sid_pid2eval_pid_flat
 
