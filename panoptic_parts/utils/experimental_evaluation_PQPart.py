@@ -8,6 +8,12 @@ from PIL import Image
 from collections import defaultdict
 from sklearn.metrics import confusion_matrix
 
+from format import decode_uids
+
+from merge_eval_spec import PPSEvalSpec
+
+
+
 
 class PQStatCat():
   def __init__(self):
@@ -308,6 +314,31 @@ def annotation_parsing(sample, cat_definition, thresh=0):
                          }
 
   return meta_dict
+
+
+def generate_ignore_info_tiff(part_panoptic_gt, eval_spec_path):
+  ignore_img = np.zeros_like(part_panoptic_gt).astype(np.uint8)
+
+  eval_spec = PPSEvalSpec(eval_spec_path)
+
+  # TODO(daan): currently, this is applied to the original part_panoptic tifs, and not to the format on which we wish to evaluate.
+  # TODO(daan): this is not an issue now, but can be when using different eval_sids wrt the dataset_sids, it will be problematic
+
+  # get sid iid pid
+  sid, _, _, sid_iid = decode_uids(part_panoptic_gt, return_sids_iids=True)
+
+  # if sid not in l_total: set to 255 (void)
+  sid_void = np.logical_not(np.isin(sid, eval_spec.eval_sid_total))
+  ignore_img[sid_void] = 255
+
+  # if sid_iid < 1000 and sid in l_things, set to crowd and store sid
+  no_iid = sid_iid < 1000
+  things = np.isin(sid, eval_spec.eval_sid_things)
+  crowd = np.logical_and(no_iid, things)
+
+  ignore_img[crowd] = sid_iid[crowd]
+
+  return ignore_img, None
 
 
 def generate_ignore_info(panoptic_dict, panoptic_ann_img, image_id, void=0):
