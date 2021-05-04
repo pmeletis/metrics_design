@@ -33,8 +33,8 @@ def _sparse_ids_mapping_to_dense_ids_mapping(ids_dict, void, length=None, dtype=
 
   Args:
     ids_dict: dictionary mapping ids to numbers (usually classes),
-    void: the positions of the dense array that don't appear in ids_dict.keys()
-      will be filled with the void value,
+    void: int, list of int, tuple of int, the positions of the dense array that don't appear in
+      ids_dict.keys() will be filled with the void value,
     length: the length of the dense mapping can be explicitly provided
     dtype: the dtype of the returned dense mapping
   """
@@ -43,7 +43,7 @@ def _sparse_ids_mapping_to_dense_ids_mapping(ids_dict, void, length=None, dtype=
   allowed_np_int_types = [np.int8, np.uint8, np.int16, np.uint16, np.int32, np.uint32, np.int64, np.uint64]
   if not isinstance(ids_dict, dict):
     raise TypeError('ids_dict must be a dictionary.')
-  if not (isinstance(void, int) or (isinstance(void, list) and all(map(lambda x: isinstance(x, int), void)))):
+  if not (isinstance(void, int) or (isinstance(void, (list, tuple)) and all(map(lambda x: isinstance(x, int), void)))):
       raise TypeError('void must be an int type integer or a list of int type integers.')
   if length is not None and not isinstance(length, int):
     raise TypeError(f'length must be None or an int type integer, but was {length}.')
