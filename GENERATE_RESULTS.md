@@ -9,9 +9,9 @@ Here, we provide a guide for generating Part-aware Panoptic Segmentation (PPS) r
  - Check that sofa and other things classes with only 1 part are not evaluated at part-level, and also not merged at part-level, because that makes no sense.
 
 **TODO**:
-- Check all functionality also for Pascal!
+- Do full checks for CPP (ungrouped), CPP (grouped), PPP
 - Check that sofa and other things classes with only 1 part are not evaluated at part-level, and also not merged at part-level, because that makes no sense.
-- Create official_evalspec for Pascal
+- Complete official_evalspec for Pascal
 
 ## Prepare EvalSpec and dataset information
 Before generating the Part-aware Panoptic Segmentation (PPS) results, you have to specify the dataset you wish to do this for. This consists of two parts:
@@ -51,9 +51,9 @@ You can adjust the EvalSpec according to your needs, so you can adjust the mappi
 
 ### Dataset information
 To run the merging scripts, we need to know what images are in a given split of a dataset. 
-Therefore, for each split (e.g., Cityscapes Panoptic Parts val), we create a json file called `ìmages.json`.
+Therefore, for each split (e.g., Cityscapes Panoptic Parts val), we create a json file called `images.json`.
 
-This `ìmages.json` follows the format also used in the [panopticapi](https://github.com/cocodataset/panopticapi), and contains of:
+This `images.json` follows the format also used in the [panopticapi](https://github.com/cocodataset/panopticapi), and contains of:
 * A dictionary with the key `'images'`, for which the value is:
   * A list of dictionaries with image information. For each image, the dictionary contains:
     * `file_name`: the file name of the RGB image (NOT the ground-truth file).
@@ -64,15 +64,17 @@ NOTE: the `image_id` defined here, should be unique, and should be used in the n
 
 To generate the `images.json` file for Cityscapes, run the following script:
 
+```shell
+python prepare_data.py \
+    --dataset_dir=$DATASET_DIR \
+    --output_dir=$OUTPUT_DIR \
+    --dataset=$DATASET
 ```
-create_image_list(dataset_dir, 
-                  output_dir, 
-                  dataset):
+where
 
-# dataset_dir: path to the PPS ground-truths file for the data split (e.g. 'DATASET_DIR/gtFinePanopticParts_trainval/gtFinePanopticParts/val')
-# óutput_dir: directory where the images.json file will be stored
-# dataset: 'Cityscapes' or 'Pascal'
-```
+- `$DATASET_DIR`: path to the PPS ground-truths file for the data split (e.g. '~/Cityscapes/gtFinePanopticParts_trainval/gtFinePanopticParts/val')
+- `$OUTPUT_DIR`: directory where the images.json file will be stored
+- `$DATASET`: dataset name ('Cityscapes' or 'Pascal')
 
 ## Get results for subtasks
 To generate Part-aware Panoptic Segmentation (PPS) predictions, we need to merge panoptic segmentation and part segmentation predictions. Here, we explain how to retrieve and format the predictions on these subtasks, before merging to PPS.
@@ -109,7 +111,7 @@ For instance segmentation, we accept two formats:
 
 For the **COCO format**, we expect:
 * A single .json file per image 
-* Each json file named as `ìmage_id.json`, with the `image_id` as defined in `images.json`.
+* Each json file named as `image_id.json`, with the `image_id` as defined in `images.json`.
 * The category id in the json file should be the scene-level id as defined in the `EvalSpec`.
 
 For the **Cityscapes format**, we expect:
@@ -147,42 +149,49 @@ pip install pycocotools
 pip install git+https://github.com/cocodataset/panopticapi.git
 ```
 
-To merge to panoptic, run the following script
+To merge to panoptic, run the command below. This saves the images and JSON file with the panoptic segmentation predictions in the format [as defined here](https://cocodataset.org/#format-results).
+
+```shell
+python merge_to_panoptic.py \
+    --eval_spec_path=$EVAL_SPEC_PATH \
+    --inst_pred_path=$INST_PRED_PATH \
+    --sem_pred_path=$SEM_PRED_PATH \
+    --output_dir=$OUTPUT_DIR \
+    --images_json=$IMAGES_JSON \
+    --instseg_format=$INSTSEG_FORMAT
 
 ```
-merge_to_panoptic.merge(eval_spec_path,
-                        inst_pred_path,
-                        sem_pred_path,
-                        output_dir,
-                        images_json,
-                        instseg_format=instseg_format)
+where
+- `$EVAL_SPEC_PATH`: path to the EvalSpec
+- `$INST_PRED_PATH`: path where the instance segmentation predictions are stored (a directory when instseg_format='Cityscapes', a JSON file when instseg_format='COCO')
+- `$SEM_PRED_PATH`: path where the semantic segmentation predictions are stored
+- `$OUTPUT_DIR`: directory where you wish to store the panoptic segmentation predictions
+- `$IMAGES_JSON`: the json file with a list of images and corresponding image ids
+- `$INSTSEG_FORMAT`: instance segmentation encoding format (either 'COCO' or 'Cityscapes')
 
-# eval_spec_path: path to the EvalSpec
-# inst_pred_dir: path where the instance segmentation predictions are stored (a directory when instseg_format='Cityscapes', a JSON file when instseg_format='COCO')
-# sem_pred_path: path where the semantic segmentation predictions are stored
-# output_dir: directory where you wish to store the panoptic segmentation predictions
-# images_json: the json file with a list of images and corresponding images ids (TODO: generate)
-# instseg_format: instance segmentation encoding format (either 'COCO' or 'Cityscapes')
-```
 
-## Merge panoptic segmentation and part segmentation to PPS
+## Merge panoptic and part segmentation to PPS
 To merge panoptic segmentation and part segmentation to the Part-aware Panoptic Segmentation (PPS) format, run the code below. 
 It stores the PPS predictions as a 3-channel PNG in shape `[height x width x 3]`, where the 3 channels encode the `[scene_category_id, scene_instance_id, part_category_id]`.
 
-```
-merge_to_pps.merge(eval_spec_path,
-                   panoptic_pred_dir,
-                   panoptic_pred_json,
-                   part_pred_path,
-                   output_dir)
-
-# eval_spec_path: path to the EvalSpec
-# panoptic_pred_dir: directory where the panoptic segmentation predictions (png files) are stored
-# panoptic_pred_json: path to the .json file with the panoptic segmentation predictions
-# part_pred_path: directory where the part predictions are stored
-# output_dir: directory where you wish to store the panoptic segmentation predictions
+```shell
+python merge_to_pps.py \
+    --eval_spec_path=$EVAL_SPEC_PATH \
+    --panoptic_pred_dir=$PANOPTIC_PRED_DIR \
+    --panoptic_pred_json=PANOPTIC_PRED_JSON \
+    --part_pred_path=$PART_PRED_PATH \
+    --images_json=$IMAGES_JSON
+    --output_dir=$OUTPUT_DIR
 ```
 
+where
+
+- `$EVAL_SPEC_PATH`: path to the EvalSpec
+- `$PANOPTIC_PRED_DIR`: directory where the panoptic segmentation predictions (png files) are stored
+- `PANOPTIC_PRED_JSON`: path to the .json file with the panoptic segmentation predictions
+- `$PART_PRED_PATH`: directory where the part predictions are stored
+- `$IMAGES_JSON`: the json file with a list of images and corresponding image ids
+- `$OUTPUT_DIR`: directory where you wish to store the part-aware panoptic segmentation predictions
 
 ## Evaluate results
 TODO by Chenyang

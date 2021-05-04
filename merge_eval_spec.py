@@ -52,6 +52,14 @@ class PPSEvalSpec(object):
     self.eval_sid_parts = espec['eval_sid_parts']
     self.eval_sid_no_parts = espec['eval_sid_no_parts']
 
+    eval_sid_total_th_st = list(set(self.eval_sid_things + self.eval_sid_stuff))
+    eval_sid_total_p_np = list(set(self.eval_sid_parts + self.eval_sid_no_parts))
+
+    if not eval_sid_total_p_np == eval_sid_total_th_st:
+      raise ValueError('The set of things and stuff classes is not equal to the set of parts and no parts classes.')
+    else:
+      self.eval_sid_total = eval_sid_total_th_st
+
     self.ignore_label = espec['ignore_label']
 
     # Dataset ids -> evaluation ids

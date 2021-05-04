@@ -1,13 +1,13 @@
-import numpy as np
 import os
+import argparse
 import json
+import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
 from panopticapi import combine_semantic_and_instance_predictions
 from pycocotools import mask
 
-from dataset_spec import DatasetSpec
 from merge_eval_spec import PPSEvalSpec
 
 from tmp_utils import get_filenames_in_dir, find_filename_in_list
@@ -37,11 +37,10 @@ def _stuff_segmentation_to_coco(sem_pred_dir, images_list, stuff_labels):
 
   fn_semseg = get_filenames_in_dir(sem_pred_dir)
 
-  # TODO(daan): multi-cpu processing
   for image in tqdm(images_list):
     image_id = image['id']
 
-    f_semseg = find_filename_in_list(image_id, fn_semseg, 'instseg')
+    f_semseg = find_filename_in_list(image_id, fn_semseg, 'semantic segmentation')
     semseg_map = np.array(Image.open(f_semseg)).astype(np.uint8)
 
     for label_id in stuff_labels:
@@ -79,7 +78,7 @@ def _instance_cs_to_coco_format(inst_pred_dir, images_list):
     h, w = image['height'], image['width']
 
     # Find the txt file for the image in the directory with predictions
-    f_instseg = find_filename_in_list(image_id, fn_instseg, 'instseg', ext='.txt')
+    f_instseg = find_filename_in_list(image_id, fn_instseg, 'instance segmentation', ext='.txt')
 
     instseg_masks = list()
     instseg_classes = list()
@@ -119,12 +118,13 @@ def merge(eval_spec_path,
   """
 
   Args:
-    eval_spec_path:
-    inst_pred_path:
-    sem_pred_path:
-    output_dir:
-    images_json:
-    instseg_format:
+    eval_spec_path: path to the EvalSpec
+    inst_pred_path: path where the instance segmentation predictions are stored
+      (a directory when instseg_format='Cityscapes', a JSON file when instseg_format='COCO')
+    sem_pred_path: path where the semantic segmentation predictions are stored
+    output_dir: directory where you wish to store the panoptic segmentation predictions
+    images_json: the json file with a list of images and corresponding image ids
+    instseg_format: instance segmentation encoding format (either 'COCO' or 'Cityscapes')
 
   Returns:
 
@@ -193,33 +193,28 @@ def merge(eval_spec_path,
 
 
 if __name__ == '__main__':
-  # TODO(daan): inlcude args to run from command line
-  eval_spec_path = "/home/ddegeus/nvme/projects/metrics_design/[WIP]cpp_official_evalspec.yaml"
-  inst_pred_dir = "/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/cityscapes/instseg/mask r-cnn/pred_val/"
-  sem_pred_dir = "/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/cityscapes/semseg/deeplabv3_plus/pred_val"
-  images_json = "/home/ddegeus/hdnew/dataset/CityscapesPanParts/gtFinePanopticParts_trainval/gtFinePanopticParts/val/images.json"
+  parser = argparse.ArgumentParser(
+    description="Merges semantic and instance segmentation predictions to panoptic segmentation results."
+  )
 
-  output_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test/"
-  instseg_format = 'Cityscapes'
+  parser.add_argument('--eval_spec_path', type=str,
+                      help="path to the EvalSpec")
+  parser.add_argument('--inst_pred_path', type=str,
+                      help="path where the instance segmentation predictions are stored (a directory when instseg_format='Cityscapes', a JSON file when instseg_format='COCO')")
+  parser.add_argument('--sem_pred_path', type=str,
+                      help="path where the semantic segmentation predictions are stored")
+  parser.add_argument('--output_dir', type=str,
+                      help="directory where you wish to store the panoptic segmentation predictions")
+  parser.add_argument('--images_json', type=str,
+                      help="the json file with a list of images and corresponding image ids")
+  parser.add_argument('--instseg_format', type=str,
+                      help="instance segmentation encoding format (either 'COCO' or 'Cityscapes')", default='COCO')
+  args = parser.parse_args()
 
-  merge(eval_spec_path,
-        inst_pred_dir,
-        sem_pred_dir,
-        output_dir,
-        images_json,
-        instseg_format=instseg_format)
+  merge(args.eval_spec_path,
+        args.inst_pred_path,
+        args.sem_pred_path,
+        args.output_dir,
+        args.images_json,
+        instseg_format=args.instseg_format)
 
-  # eval_spec_path = "/home/ddegeus/nvme/projects/metrics_design/[WIP]ppp_official_evalspec.yaml"
-  # inst_pred_dir = "/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/pascal/instseg/mask r-cnn/pred_val/test_results.segm.json"
-  # sem_pred_dir = "/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/pascal/semseg/deeplabv3/pred_val_orig_sids"
-  # images_json = "/home/ddegeus/datasets_other/pascal_panoptic_parts_v1/validation/images.json"
-  #
-  # output_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test_pascal/"
-  # instseg_format = 'COCO'
-  #
-  # merge(eval_spec_path,
-  #       inst_pred_dir,
-  #       sem_pred_dir,
-  #       output_dir,
-  #       images_json,
-  #       instseg_format=instseg_format)

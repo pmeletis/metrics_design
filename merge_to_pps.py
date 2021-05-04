@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import json
+import argparse
 from tqdm import tqdm
 from PIL import Image
 
@@ -76,11 +77,12 @@ def merge(eval_spec_path,
   """
 
   Args:
-    eval_spec_path:
-    panoptic_pred_dir:
-    panoptic_pred_json:
-    part_pred_path:
-    output_dir:
+    eval_spec_path: path to the EvalSpec
+    panoptic_pred_dir: directory where the panoptic segmentation predictions (png files) are stored
+    panoptic_pred_json: path to the .json file with the panoptic segmentation predictions
+    part_pred_path: directory where the part predictions are stored
+    images_json: the json file with a list of images and corresponding image ids
+    output_dir: directory where you wish to store the part-aware panoptic segmentation predictions
 
   Returns:
 
@@ -124,7 +126,6 @@ def merge(eval_spec_path,
   fn_partseg = get_filenames_in_dir(part_pred_path)
 
   print("Merging panoptic and part predictions to PPS, and saving...")
-  # TODO(daan): implement a check to see whether the image set correponds with image set from images.json (to be created)
   for image_info in tqdm(images_list):
     image_id = image_info['id']
 
@@ -145,7 +146,7 @@ def merge(eval_spec_path,
     h, w = pred_pan.shape[0], pred_pan.shape[1]
 
     # Load part predictions
-    f_partseg = find_filename_in_list(image_id, fn_partseg, 'partseg')
+    f_partseg = find_filename_in_list(image_id, fn_partseg, 'part segmentation')
     pred_part = np.array(Image.open(f_partseg))
 
     class_canvas = np.ones((h, w), dtype=np.int32) * void
@@ -153,14 +154,21 @@ def merge(eval_spec_path,
     # TODO(daan): check whether we can also set part_canvas init to 255
     part_canvas = np.zeros((h, w), dtype=np.int32)
 
-    segment_count = 0
+    segment_count_per_cat = dict()
+
     for segment in annotation['segments_info']:
-      segment_count += 1
-      # TODO(daan): keep track of # instances per sid, and only relevant for things
-      if segment_count > 255:
-        raise ValueError('More than 255 instances. This is currently not supported.')
       segment_id = segment['id']
       cat_id = segment['category_id']
+
+      # Increase the segment count per category
+      if cat_id in segment_count_per_cat.keys():
+        segment_count_per_cat[cat_id] += 1
+      else:
+        segment_count_per_cat[cat_id] = 1
+
+      # Check whether there are not too many segments to store in a PNG w/ dtype np.uint8
+      if segment_count_per_cat[cat_id] > 255:
+        raise ValueError('More than 255 instances for category_id > {}. This is currently not yet supported.'.format(cat_id))
 
       mask = pred_pan_flat == segment_id
 
@@ -172,7 +180,6 @@ def merge(eval_spec_path,
         plausible_parts = sids2part_seg_ids[cat_id]
         plausible_parts_mask = np.isin(pred_part, plausible_parts)
 
-        # TODO(daan): see if this can also already be done for the entire part prediction, instead of per class
         # Get the mapping from part_seg ids to evaluation pids, given the sid
         part_seg_ids2eval_pids = part_seg_ids2eval_pids_per_sid[cat_id]
         part_canvas[mask] = void
@@ -183,7 +190,7 @@ def merge(eval_spec_path,
 
         # Store the category id and instance id in the respective tensors
         class_canvas[mask] = cat_id
-        inst_canvas[mask] = segment_count
+        inst_canvas[mask] = segment_count_per_cat[cat_id]
 
       else:
         # If category does not have parts
@@ -191,7 +198,7 @@ def merge(eval_spec_path,
 
         # Store the category id and instance id in the respective tensors
         class_canvas[mask] = cat_id
-        inst_canvas[mask] = segment_count
+        inst_canvas[mask] = segment_count_per_cat[cat_id]
         # Store a dummy part id
         part_canvas[mask] = 1
 
@@ -203,36 +210,27 @@ def merge(eval_spec_path,
 
 
 if __name__ == '__main__':
-  # TODO(daan): inlcude args to run from command line
-  eval_spec_path = "/home/ddegeus/nvme/projects/metrics_design/[WIP]cpp_official_evalspec.yaml"
-  images_json = "/home/ddegeus/hdnew/dataset/CityscapesPanParts/gtFinePanopticParts_trainval/gtFinePanopticParts/val/images.json"
+  parser = argparse.ArgumentParser(
+    description="Merges panoptic and part segmentation predictions to part-aware panoptic segmentation results."
+  )
 
-  panoptic_pred_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test/panoptic"
-  panoptic_pred_json = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test/panoptic.json"
-  part_pred_path = '/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/cityscapes/partseg/deeplabv3_plus/parts_ungrouped/pred_val'
+  parser.add_argument('--eval_spec_path', type=str,
+                      help="path to the EvalSpec")
+  parser.add_argument('--panoptic_pred_dir', type=str,
+                      help="directory where the panoptic segmentation predictions (png files) are stored")
+  parser.add_argument('--panoptic_pred_json', type=str,
+                      help="path to the .json file with the panoptic segmentation predictions")
+  parser.add_argument('--part_pred_path', type=str,
+                      help="directory where the part predictions are stored")
+  parser.add_argument('--images_json', type=str,
+                      help="the json file with a list of images and corresponding image ids")
+  parser.add_argument('--output_dir', type=str,
+                      help="directory where you wish to store the part-aware panoptic segmentation predictions")
+  args = parser.parse_args()
 
-
-  output_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_pps/cs_ss_is_common_ps_common_ungrouped"
-
-  merge(eval_spec_path,
-        panoptic_pred_dir,
-        panoptic_pred_json,
-        part_pred_path,
-        images_json,
-        output_dir)
-
-  # eval_spec_path = "/home/ddegeus/nvme/projects/metrics_design/[WIP]ppp_official_evalspec.yaml"
-  # images_json = "/home/ddegeus/datasets_other/pascal_panoptic_parts_v1/validation/images.json"
-  #
-  # panoptic_pred_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test_pascal/panoptic"
-  # panoptic_pred_json = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_panoptic/test_pascal/panoptic.json"
-  # part_pred_path = '/home/ddegeus/nvme/projects/part_panoptic/experiments/baselines/pascal/partseg/deeplabv3_plus/ungrouped/pred_val'
-  #
-  # output_dir = "/home/ddegeus/hdnew/output_dir/panoptic_parts/merge_to_pps/test_pascal"
-  #
-  # merge(eval_spec_path,
-  #       panoptic_pred_dir,
-  #       panoptic_pred_json,
-  #       part_pred_path,
-  #       images_json,
-  #       output_dir)
+  merge(args.eval_spec_path,
+        args.panoptic_pred_dir,
+        args.panoptic_pred_json,
+        args.part_pred_path,
+        args.images_json,
+        args.output_dir)
