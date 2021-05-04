@@ -1,7 +1,6 @@
 version: 2.0
 comments:
-  - PASCAL Panoptic Parts 57 parts classes + 1 background
-  - we use the grouping and indexing used in [X, X, X]
+  - PASCAL Panoptic Parts 57 parts classes
 
 dataset_spec_path: ppp_datasetspec.yaml
 

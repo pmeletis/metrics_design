@@ -17,7 +17,7 @@ from eval_spec_PQPart import PQPartEvalSpec
 
 
 
-FILEPATH_EVALUATION_DEF = 'cpp_partPQ_24_evalspec.yaml'
+FILEPATH_EVALUATION_DEF = 'cpp_PQPart_23_evalspec.yaml'
 FILEPATH_PATTERN_GT_PAN_PART_CPP = op.join('/home/cylu/Documents/fpsnetv2/datasets/Cityscapes/validation/part_gt',
                                            '*', '*.tif')
 FILEPATH_GT_PAN_CPP = op.join('/home/cylu/Documents/fpsnetv2/datasets/Cityscapes/validation/panoptic')

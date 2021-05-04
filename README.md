@@ -53,8 +53,10 @@ Run in terminal:
 python -m eval_segmentation_parts path_evalspec basepath_gt basepath_pred
 ```
 
-### Part-aware Panoptic Segmentation: PQ, PQ_parts
-<img src="https://render.githubusercontent.com/render/math?math=PQ^{\text{parts}}">
+### Part-aware Panoptic Segmentation: PQ, PQ_parts <img src="https://render.githubusercontent.com/render/math?math=PQ^{\text{parts}}">
+```bash
+python -m eval_PQPart path_evalspec basepath_gt basepath_pred
+```
 
 ## Dataset release history
 
