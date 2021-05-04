@@ -4,6 +4,7 @@ This module contains tools for handling dataset specifications.
 import copy
 from functools import partial
 from typing import Union
+from itertools import chain
 import platform
 version = platform.python_version()
 if float(version[:3]) <= 3.6:
@@ -49,6 +50,10 @@ class DatasetSpec(object):
       - scene_color_from_scene_class('bus') → [0, 60, 100]
       - part_classes_from_scene_class('bus') → ['UNLABELED', 'window', 'wheel', 'light', 'license plate', 'chassis']
       - sid_pid_from_scene_class_part_class('bus', 'wheel') → 2802
+
+  Experimental (format/API may change):
+    - l_allparts: list of str, a list of all parts in str with format f"{scene_class}-{part_class}",
+      contains at position 0 the special 'UNLABELED' class
 
   Notes:
     - A special 'UNLABELED' semantic class is defined for the scene-level and part-level abstractions.
@@ -122,6 +127,14 @@ class DatasetSpec(object):
     self.l_parts = list(filter(lambda k: len(self.scene_class2part_classes[k]) >= 2,
                                self.scene_class2part_classes))
     self.l_noparts = list(set(self.l) - set(self.l_parts))
+    self.l_allparts = ['UNLABELED']
+    for scene_class, part_classes in self.scene_class2part_classes.items():
+      if scene_class == 'UNLABELED':
+        continue
+      for part_class in part_classes:
+        if part_class == 'UNLABELED':
+          continue
+        self.l_allparts.append(f'{scene_class}-{part_class}')
     self.sid2scene_class = dict(enumerate(self.l))
     self.sid2scene_color = {sid: self.scene_class2color[name] for sid, name in self.sid2scene_class.items()}
     self.sid2part_classes = {sid: part_classes
