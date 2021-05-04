@@ -34,7 +34,7 @@ scene_class2part_classes: {
   sheep: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn, torso, neck, lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg, tail],
   sofa: [],
   train: [head, hfrontside, hleftside, hrightside, hbackside, hroofside, headlight, coach, cfrontside, cleftside, crightside, cbackside, croofside],
-  tvmonitor: [screen],
+  tvmonitor: [screen, frame],
   bag: [],
   basket: [],
   bed: [],

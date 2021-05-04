@@ -168,7 +168,7 @@ def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
   # possible solution: keep only a flag to convert and make the dataset_spec script constant
   if (experimental_dataset_spec is not None and
       hasattr(experimental_dataset_spec, '_sid_pid_file2sid_pid')):
-    if not isinstance(uids, np.ndarray):
+    if not isinstance(uids, (np.ndarray, np.int32)):
       raise NotImplementedError(
           f'sid_pid from file mapping is only supported for np.ndarray for now. '
           f'Found {type(uids)}.')

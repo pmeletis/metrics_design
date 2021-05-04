@@ -37,8 +37,41 @@
  - refactor eval_* scripts
 
 ## Timeline
- - 30/04: Finalize ToDo's
- - 02/05: Complete internal testing by three of us
- - 04/05: Publish repo
- - 05/05: Upload CVPR to arxiv
- - 18/05: Update Tech report on arxiv
+ - 04/05: Finalize ToDo's
+ - 06/05: Complete internal testing by three of us
+ - 07/05: Publish repo
+ - 08/05: Upload CVPR to arxiv
+ - 25/05: Update Tech report on arxiv
+
+## Metrics for Panoptic Parts datasets
+Two families of metrics are provided for the evaluation of performance: IoU and PQ.
+
+### Part Segmentation: <img src="https://render.githubusercontent.com/render/math?math=IoU^{\text{parts}}">
+
+Run in terminal:
+```bash
+python -m eval_segmentation_parts path_evalspec basepath_gt basepath_pred
+```
+
+### Part-aware Panoptic Segmentation: PQ, PQ_parts
+<img src="https://render.githubusercontent.com/render/math?math=PQ^{\text{parts}}">
+
+## Dataset release history
+
+Dataset releases and Github repository versions association:
+ - v2: `v2` or `master` branch
+ - v1: `v1` branch
+
+### Cityscapes Panoptic Parts
+
+ - v2: Rename GT files for complying with official Cityscapes naming scheme
+ - v1: Initial release
+
+### PASCAL Panoptic Parts
+
+ - v2: Re-assign pids for the `tvmonitor` scene-level class, with pids: `screen`: 1, `tvframe`: 2. This change makes PPP part labels a pure superset of PASCAL-Parts-58. This is a a breaking change. The sid_pid are as following:
+   - v2: 20_00: (`tvmonitor`, `UNLABELED`), 20_01: (`tvmonitor`, `screen`), 20_02: (`tvmonitor`, `frame`).
+   - v1: 20_00: (`tvmonitor`, `UNLABELED`), 20_01: (`tvmonitor`, `screen`).
+
+   Moreover, in this release the `UNLABELED` pid (00) is removed from the uid as it serves no purpose and the uids do not change, since XX_XXX_00 = XX_XXX.
+ - v1: Initial release
