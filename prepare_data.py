@@ -1,10 +1,21 @@
 import json
 import glob
 import os
+import argparse
 from tqdm import tqdm
 from PIL import Image
 
 def create_image_list(dataset_dir, output_dir, dataset=None):
+  """
+
+  Args:
+    dataset_dir: path to the PPS ground-truths file for the data split
+    output_dir: directory where the images.json file will be stored
+    dataset: dataset name ('Cityscapes' or 'Pascal')
+
+  Returns:
+
+  """
   print("Creating images list...")
   images_list = list()
 
@@ -44,13 +55,18 @@ def create_image_list(dataset_dir, output_dir, dataset=None):
   print("Created images list and stored at {}.".format(output_path))
 
 if __name__ == '__main__':
-  # TODO(daan): inlcude args to run from command line
-  # dataset_dir = "/home/ddegeus/hdnew/dataset/CityscapesPanParts/gtFinePanopticParts_trainval/gtFinePanopticParts/val"
-  # output_dir = "/home/ddegeus/hdnew/dataset/CityscapesPanParts/gtFinePanopticParts_trainval/gtFinePanopticParts/val"
-  #
-  # create_image_list(dataset_dir, output_dir, dataset='Cityscapes')
+  parser = argparse.ArgumentParser(
+    description="Creates an images.json file for the Cityscapes Panoptic Parts or Pascal Panoptic Parts dataset."
+  )
 
-  dataset_dir = "/home/ddegeus/datasets_other/pascal_panoptic_parts_v1/validation/parts"
-  output_dir = "/home/ddegeus/datasets_other/pascal_panoptic_parts_v1/validation/"
+  parser.add_argument('--dataset_dir', type=str,
+                      help="path to the PPS ground-truths file for the data split")
+  parser.add_argument('--output_dir', type=str,
+                      help="directory where the images.json file will be stored")
+  parser.add_argument('--dataset', type=str,
+                      help="dataset name ('Cityscapes' or 'Pascal')")
+  args = parser.parse_args()
 
-  create_image_list(dataset_dir, output_dir, dataset='Pascal')
+  create_image_list(args.dataset_dir,
+                    args.output_dir,
+                    dataset=args.dataset)
