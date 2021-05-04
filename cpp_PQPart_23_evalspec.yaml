@@ -1,9 +1,6 @@
 version: 2.0
 comments:
-  - Cityscapes Panoptic Parts 23 parts classes + 1 background
-  - sid_pid2eid__template refers to ground truth and eval_id2scene_part_class refers to predictions
-  - sid_pid2eid__template contains rules on how to parse semantic-part ids (sid_pid) to eval ids (eid),
-    for parsing rules see parse__sid_pid2eid__v2
+  - Cityscapes Panoptic Parts 23 parts classes
 
 dataset_spec_path: cpp_datasetspec.yaml
 
