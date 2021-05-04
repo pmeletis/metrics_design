@@ -10,7 +10,6 @@ Here, we provide a guide for generating Part-aware Panoptic Segmentation (PPS) r
 
 **TODO**:
 - Do full checks for CPP (ungrouped), CPP (grouped), PPP
-- Check that sofa and other things classes with only 1 part are not evaluated at part-level, and also not merged at part-level, because that makes no sense.
 - Complete official_evalspec for Pascal
 
 ## Prepare EvalSpec and dataset information
