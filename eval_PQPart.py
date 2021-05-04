@@ -13,34 +13,30 @@ import sys
 sys.path.append('panoptic_parts')
 
 from panoptic_parts.utils.experimental_evaluation_PQPart import evaluate_PQPart_multicore
-from eval_spec_PQPart import PQPartEvalSpec
+from merge_eval_spec import PPSEvalSpec
 
 
-
-FILEPATH_EVALUATION_DEF = 'cpp_PQPart_23_evalspec.yaml'
+FILEPATH_EVALUATION_DEF = '[WIP]cpp_official_evalspec_grouped.yaml'
 FILEPATH_PATTERN_GT_PAN_PART_CPP = op.join('/home/cylu/Documents/fpsnetv2/datasets/Cityscapes/validation/part_gt',
                                            '*', '*.tif')
-FILEPATH_GT_PAN_CPP = op.join('/home/cylu/Documents/fpsnetv2/datasets/Cityscapes/validation/panoptic')
 BASEPATH_PRED = "/home/cylu/Documents/fpsnetv2/datasets/Cityscapes/predictions/20200917_fpsnet_parts_0/part_panoptic_cs"
 
 
-def filepaths_pairs_fn(filepath_pattern_gt_pan_part, filepath_pattern_gt_pan, basepath_pred):
+def filepaths_pairs_fn(filepath_pattern_gt_pan_part, basepath_pred):
   # return a list of tuples with paths
   filepaths_gt_pan_part = glob.glob(filepath_pattern_gt_pan_part)
   print(f"Found {len(filepaths_gt_pan_part)} ground truth labels.")
   pairs = list()
   for fp_gt_pan_part in filepaths_gt_pan_part:
-    image_id = op.basename(fp_gt_pan_part)[:-23]
-    fp_gt_pan = op.join(filepath_pattern_gt_pan, image_id + '_gtFine_instanceIds.png')
-    assert op.isfile(fp_gt_pan)
     ########################
     # Adapt to your system #
     # here we use the ground truth paths for predictions
+    image_id = op.basename(fp_gt_pan_part)[:-23]
     fp_pred = op.join(basepath_pred, image_id + "_gtFine_leftImg8bit.png")
     assert op.isfile(fp_pred)
     # assert False, 'delete this when adapted to your needs'
     ########################
-    pairs.append((image_id, fp_gt_pan_part, fp_gt_pan, fp_pred))
+    pairs.append((fp_gt_pan_part, fp_pred))
 
   return pairs
 
@@ -56,8 +52,8 @@ def pred_reader_fn(fp_pred):
 ######################
 
 
-spec = PQPartEvalSpec(FILEPATH_EVALUATION_DEF)
-filepaths_pairs = filepaths_pairs_fn(FILEPATH_PATTERN_GT_PAN_PART_CPP, FILEPATH_GT_PAN_CPP, BASEPATH_PRED)
+spec = PPSEvalSpec(FILEPATH_EVALUATION_DEF)
+filepaths_pairs = filepaths_pairs_fn(FILEPATH_PATTERN_GT_PAN_PART_CPP, BASEPATH_PRED)
 
 results = evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn)
 print(results)

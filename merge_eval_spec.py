@@ -11,7 +11,7 @@ from operator import itemgetter
 from panoptic_parts.utils.experimental_evaluation import parse__sid_pid2eid__v2
 from panoptic_parts.utils.utils import (
     _sparse_ids_mapping_to_dense_ids_mapping as dict_to_numpy)
-from dataset_spec import DatasetSpec
+from specs.dataset_specs.dataset_spec import DatasetSpec
 
 
 class PPSEvalSpec(object):
@@ -102,7 +102,7 @@ class PPSEvalSpec(object):
     cat_definition['cat_def'] = list()
     for sid in self.eval_sid_total:
       cat_def = dict()
-      cat_def['sem_cls'] = sid
+      cat_def['sem_cls'] = [sid]
       if sid in self.eval_sid_parts:
         if sid in sids_eval2pids_eval.keys():
           if len(sids_eval2pids_eval[sid]) > 1:
@@ -117,7 +117,7 @@ class PPSEvalSpec(object):
                            "so it cannot be treated as a class with parts. "
                            "Remove it as a class with parts, in the EvalSpec.".format(sid))
       else:
-        cat_def['parts_cls'] = 1
+        cat_def['parts_cls'] = [1]
         if sid in sids_eval2pids_eval.keys():
           if len(sids_eval2pids_eval[sid]) > 1:
             warnings.warn("Note: Semantic category {} will be treated as a class without parts according to EvalSpec, "

@@ -7,12 +7,7 @@ import numpy as np
 from PIL import Image
 from collections import defaultdict
 from sklearn.metrics import confusion_matrix
-
-from format import decode_uids
-
-from merge_eval_spec import PPSEvalSpec
-
-
+from panoptic_parts.utils.format import decode_uids
 
 
 class PQStatCat():
@@ -230,19 +225,10 @@ def annotation_parsing(sample, cat_definition, thresh=0):
   # TODO(panos, chenyang): replace this with decode_uids
   # the difference is that instead of -1 for invalid positions,
   # this code uses 0
-  sem_map = np.where(sample <= 99,
-               sample,
-               np.where(sample <= 99_999,
-                        sample // 10 ** 3,
-                        sample // 10 ** 5))
-  inst_map = np.where(sample <= 99,
-                      np.zeros_like(sample),
-                      np.where(sample <= 99_999,
-                               sample % 10 ** 3,
-                               (sample % 10 ** 5) // 10 ** 2))
-  part_map = np.where(sample <= 99_999,
-                      np.zeros_like(sample),
-                      (sample % 10 ** 5) % 10 ** 2)
+  sem_map, inst_map, part_map = decode_uids(sample, experimental_null_id=0)
+  sem_map = sem_map.astype(np.int32)
+  inst_map = inst_map.astype(np.int32)
+  part_map = part_map.astype(np.int32)
 
   meta_dict = {}
 
@@ -316,10 +302,10 @@ def annotation_parsing(sample, cat_definition, thresh=0):
   return meta_dict
 
 
-def generate_ignore_info_tiff(part_panoptic_gt, eval_spec_path):
+def generate_ignore_info_tiff(part_panoptic_gt, eval_spec):
   ignore_img = np.zeros_like(part_panoptic_gt).astype(np.uint8)
 
-  eval_spec = PPSEvalSpec(eval_spec_path)
+  # eval_spec = PPSEvalSpec(eval_spec_path)
 
   # TODO(daan): currently, this is applied to the original part_panoptic tifs, and not to the format on which we wish to evaluate.
   # TODO(daan): this is not an issue now, but can be when using different eval_sids wrt the dataset_sids, it will be problematic
@@ -557,9 +543,10 @@ def get_traceback(f):
 
 
 @get_traceback
-def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, gt_panoptic_dict, cat_definition):
+def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
   # Initialize PartPQ statistics
   pq_stats_split = PQStat()
+  cat_definition = spec.cat_definition
 
 
   counter = 0
@@ -567,10 +554,8 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, gt_panoptic_dict, ca
   for fn_pair in fn_pairs:
     counter += 1
     print(counter)
-    image_id = fn_pair[0]
-    gt_pan_part_file = fn_pair[1]
-    gt_pan_file = fn_pair[2]
-    pred_file = fn_pair[3]
+    gt_pan_part_file = fn_pair[0]
+    pred_file = fn_pair[1]
 
 
     # partPQ eval starts here
@@ -588,13 +573,12 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, gt_panoptic_dict, ca
                                         parts_output, cat_definition, thresh=0)
 
     # Generate ignore_data
-    panoptic_ann_img = np.array(Image.open(gt_pan_file)).astype(np.int32)
+    ignore_img, _ = generate_ignore_info_tiff(part_gt_sample, spec)
 
-    ignore_img, ignore_dict = generate_ignore_info(gt_panoptic_dict, panoptic_ann_img, image_id)
+
     crowd_dict = ignore_img_parsing(ignore_img, cat_definition)
 
     temp_pq_part = pq_part(part_pred_dict, part_gt_dict, crowd_dict, cat_definition)
-    # print(temp_pq_part.pq_average(cat_definition))
 
     pq_stats_split += temp_pq_part
 
@@ -603,23 +587,20 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, gt_panoptic_dict, ca
 
 def evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=8):
 
-  gt_panoptic_dict = spec.gt_panoptic_dict
   cat_definition = spec.cat_definition
-
 
   fn_splits = np.array_split(filepaths_pairs, cpu_num)
   print("Number of cores: {}, images per core: {}".format(cpu_num, len(fn_splits[0])))
   workers = multiprocessing.Pool(processes=cpu_num)
   processes = []
   for proc_id, fn_split in enumerate(fn_splits):
-      p = workers.apply_async(evaluate_single_core,
-                              (proc_id, fn_split, pred_reader_fn, gt_panoptic_dict, cat_definition))
+      p = workers.apply_async(evaluate_single_core, (proc_id, fn_split, pred_reader_fn, spec))
       processes.append(p)
 
   pq_stats_global = PQStat()
-  # split_pq_stats = evaluate_single_core(fn_total, fn_anns, fn_preds, gt_folder_pan, gt_panoptic_dict)
   for p in processes:
     pq_stats_global += p.get()
 
   results = pq_stats_global.pq_average(cat_definition)
+
   return results
