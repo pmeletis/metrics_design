@@ -44,8 +44,7 @@ def _validate_uids_values_numpy_python(uids):
     raise ValueError('Some uids exceed the 99_999_99 encoding limit.')
   if np.any(uids < 0):
     raise ValueError('Some uids are negative.')
-  num_digits = (np.log10(uids) + 1).astype(np.int)
-  if 3 in np.unique(num_digits):
+  if np.any(np.logical_and(uids >=100, uids <= 999)):
     raise ValueError(
         'Some uids have length of 3 digits that is not allowed by the encoding format.')
 
