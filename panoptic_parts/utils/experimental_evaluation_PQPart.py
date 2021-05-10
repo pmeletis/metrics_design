@@ -1,13 +1,16 @@
 import os
+import os.path as op
 import json
 import functools
 import traceback
 import multiprocessing
+import copy
 import numpy as np
 from PIL import Image
 from collections import defaultdict
 from sklearn.metrics import confusion_matrix
 from panoptic_parts.utils.format import decode_uids
+from panoptic_parts.utils.utils import _sparse_ids_mapping_to_dense_ids_mapping
 
 
 class PQStatCat():
@@ -184,13 +187,34 @@ def prediction_parsing(sem_map, inst_map, part_map, cat_definition, thresh=0):
   return meta_dict
 
 
-def annotation_parsing(sample, cat_definition, thresh=0):
+def parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid, experimental_null_id=0):
+  dsp2spe = copy.copy(dataset_sid_pid2eval_sid_pid)
+  dsp2spe_keys = dsp2spe.keys()
+  dsp2spe_new = dict()
+  for k in range(99_99):
+    if k in dsp2spe_keys:
+      dsp2spe_new[k] = dsp2spe[k]
+      continue
+    sid, pid = (k, None) if k < 100 else divmod(k, 100)
+    if sid in dsp2spe_keys:
+      dsp2spe_new[k] = dsp2spe[sid]
+      continue
+    if 'DEFAULT' in dsp2spe_keys:
+      dsp2spe_new[k] = dsp2spe['DEFAULT']
+      continue
+    raise ValueError(f'dataset_sid_pid2eval_sid_pid does not follow the specification rules for key {k}.')
+  # replace ignored sid_pid s with the experimental_null_id
+  dsp2spe_new = {k: experimental_null_id if v == 'IGNORED' else v for k, v in dsp2spe_new.items()}
+  return dsp2spe_new
+
+
+def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
   '''
   parse the numpy encoding defined by dataset definition.
   [optional]: drop the instances with pixels less than a threshold, which is important if loads of tiny instances exists.
 
   Args:   sample: a numpy array with ground truth annotation
-          cat_definition: e.g.
+          spec.cat_definition: e.g.
                           {
                               "num_cats": 2,
                               "cat_def":  [{
@@ -222,17 +246,45 @@ def annotation_parsing(sample, cat_definition, thresh=0):
 
   h, w = sample.shape
 
-  # TODO(panos, chenyang): replace this with decode_uids
-  # the difference is that instead of -1 for invalid positions,
-  # this code uses 0
-  sem_map, inst_map, part_map = decode_uids(sample, experimental_null_id=0)
+  sem_map, inst_map, part_map, sids_pids = decode_uids(sample, return_sids_pids=True, experimental_null_id=0, experimental_dataset_spec=spec._dspec)
   sem_map = sem_map.astype(np.int32)
   inst_map = inst_map.astype(np.int32)
   part_map = part_map.astype(np.int32)
 
+  # transform only if dataset_sid_pid2eval_sid_pid is not the identity mapping
+  # for CPP this is not needed
+  if any(k != v if v != 'IGNORED' else False for k, v in spec.dataset_sid_pid2eval_sid_pid.items()):
+    # map the sids_pids of the dataset to the sids_pids of the eval_spec
+    # TODO(panos): for now only the pids are mapped (the sids are assumed to be the identical)
+    dsp2esp = parse_dataset_sid_pid2eval_sid_pid(spec.dataset_sid_pid2eval_sid_pid, experimental_null_id=-1)
+    dsp2esp = _sparse_ids_mapping_to_dense_ids_mapping(dsp2esp, -100, length=10000)
+    _, iid, _, sids_pids = decode_uids(sample, return_sids_pids=True, experimental_null_id=-1, experimental_dataset_spec=spec._dspec)
+    sids_pids = dsp2esp[sids_pids]
+    assert not np.any(np.equal(sids_pids, -100)), 'dataset_sid_pid2eval_sid_pid is incomplete.'
+    pids = sids_pids % 100
+    pids[pids==99] = -1
+    part_map = pids
+
+    # print("inst", np.unique(iid, return_counts=True))
+
+    # print("before", np.unique(part_map, return_counts=True))
+    no_inst_mask = iid == -1
+    part_map[no_inst_mask] = -1
+    # print("after", np.unique(part_map, return_counts=True))
+
+    # pids = pids.astype(np.int32)
+    
+    # print(np.unique(pids, return_counts=True))
+    
+    # debug
+    # Image.fromarray(pids, mode='I').save(op.join('/home/panos/git/github/pmeletis/metrics_design',
+    #                                      fn_pair[1][-15:]))
+    # exit()
+
   meta_dict = {}
 
   # cat_id is 0, 1, 2, ...,
+  cat_definition = spec.cat_definition
   for cat_id in range(cat_definition['num_cats']):
     sem_cls = cat_definition['cat_def'][cat_id]['sem_cls']
     parts_cls = cat_definition['cat_def'][cat_id]['parts_cls']
@@ -311,7 +363,7 @@ def generate_ignore_info_tiff(part_panoptic_gt, eval_spec):
   # TODO(daan): this is not an issue now, but can be when using different eval_sids wrt the dataset_sids, it will be problematic
 
   # get sid iid pid
-  sid, _, _, sid_iid = decode_uids(part_panoptic_gt, return_sids_iids=True)
+  sid, _, _, sid_iid = decode_uids(part_panoptic_gt, return_sids_iids=True, experimental_dataset_spec=eval_spec._dspec)
 
   # if sid not in l_total: set to 255 (void)
   sid_void = np.logical_not(np.isin(sid, eval_spec.eval_sid_total))
@@ -550,10 +602,12 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
 
 
   counter = 0
+  print(f'core {proc_id}: {counter}/{len(fn_pairs)}')
   # Loop over all predictions
   for fn_pair in fn_pairs:
     counter += 1
-    print(counter)
+    if counter % (len(fn_pairs) // 5) == 0:
+      print(f'core {proc_id}: {counter}/{len(fn_pairs)}')
     gt_pan_part_file = fn_pair[0]
     pred_file = fn_pair[1]
 
@@ -562,7 +616,7 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
     # Load GT annotation file for this image
 
     part_gt_sample = np.array(Image.open(gt_pan_part_file)).astype(np.int32)
-    part_gt_dict = annotation_parsing(part_gt_sample, cat_definition, thresh=0)
+    part_gt_dict = annotation_parsing(part_gt_sample, spec, thresh=0, fn_pair=fn_pair)
 
     # Load prediction for this image
 
@@ -585,12 +639,12 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
   return pq_stats_split
 
 
-def evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=8):
+def evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=multiprocessing.cpu_count()-1):
 
   cat_definition = spec.cat_definition
 
   fn_splits = np.array_split(filepaths_pairs, cpu_num)
-  print("Number of cores: {}, images per core: {}".format(cpu_num, len(fn_splits[0])))
+  print("Number of cores to be used: {}, images per core: {}".format(cpu_num, len(fn_splits[0])))
   workers = multiprocessing.Pool(processes=cpu_num)
   processes = []
   for proc_id, fn_split in enumerate(fn_splits):
