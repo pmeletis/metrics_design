@@ -59,11 +59,8 @@ for k, v in dataset_sid_pid2eval_sid_pid.items():
 # eval_pid_flat2scene_part_label
 ###################################################################################################
 eval_pid_flat = espec['eval_pid_flat2scene_part_label'].keys()
-eval_sid_pid2eval_pid_flat = espec['eval_sid_pid2eval_pid_flat']
-eval_pid_flat2eval_sid_pid = {v: k for k, v in eval_sid_pid2eval_pid_flat.items()}
+eval_pid_flat2eval_sid_pid = {v: k for k, v in espec['eval_sid_pid2eval_pid_flat'].items()}
 eval_pid_flat2eval_sid_pid[0] = 0
-eval_sid_pid2dataset_sid_pid = {v: k for k, v in dataset_sid_pid2eval_sid_pid.items()}
-eval_sid_pid2dataset_sid_pid[0] = 0
 
 part_groupings['UNLABELED'] = {'UNLABELED': ['UNLABELED']}
 
@@ -74,7 +71,6 @@ for k in eval_pid_flat:
   scene_class = dspec.scene_class_from_sid(eval_sid)
   part_class_new2part_classes_old = {'UNLABELED': ['UNLABELED']}
   part_class_new2part_classes_old.update(part_groupings[scene_class])
-  print(eval_pid, list(part_class_new2part_classes_old.keys()))
   part_class = list(part_class_new2part_classes_old.keys())[eval_pid]
   eval_pid_flat2scene_part_label[k] = f'{scene_class}-{part_class}'
 ###################################################################################################
