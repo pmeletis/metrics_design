@@ -21,18 +21,8 @@ class PPSEvalSpec(object):
   defaults and specification checking.
 
   Accessible specification attributes:
-    - dataset_spec: the associated dataset specification
-    - Nclasses: the number of evaluated classes (including ignored and background)
-    - scene_part_classes: list of str, the names of the scene-part classes for evaluation,
-        ordered by the eval id
-    - eid_ignore: the eval_id to be ignored in evaluation
-    - sid_pid2eval_id: dict, maps all sid_pid (0-99_99) to an eval_id,
-        according to the template in specification yaml
-    - sp2e_np: np.ndarray, shape: (10000,), sid_pid2eval_id as an array for dense gathering,
-        position i has the sid_pid2eval_id[i] value
-  
-  Member functions:
-   - 
+    - 
+
   """
   def __init__(self, spec_path):
     """

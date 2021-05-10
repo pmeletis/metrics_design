@@ -4,89 +4,90 @@ comments:
  - scene_class_new2scene_classes_old contains a mapping from the new scene-level classes to at least one of the original scene-level classes of the dataset (dataset_spec.l). Use this mapping to group or ignore scene-level classes.
  - part_groupings is a mapping from the new part-level classes to at least one of the original part-level classes of the dataset.
 
-dataset_spec_path: ppp_datasetspec.yaml
+dataset_spec_path: specs/dataset_specs/ppp_datasetspec.yaml
 
-# 
-#scene_class_new2scene_classes_old: {
-#}
 
-# part_groupings provides the information of the grouped part-level classes. The countable parts are again folded. Part-level Background and ignored classes are not included.
-# using typing module conventions:
-# Dict(scene_class_new, Dict(part_class_new, part_classes_old))
+# part_groupings provides the information of the grouped part-level classes.
+# typing: Dict(scene_class, Dict(part_class_new, part_classes_old))
+# for now only a grouping of the part_classes under the same scene_class is supported
 part_groupings: {
   aeroplane: {
+    # UNLABELED: IGNORED,
     body: [body],
-    stern: [stern, tail],
-    wing: [lwing, rwing],
     engine: [engine],
+    wing: [lwing, rwing],
+    stern: [stern, tail],
     wheel: [wheel],
   },
   bicycle: {
     wheel: [fwheel, bwheel, chainwheel],
-    body: [saddle, handlebar, headlight],
+    body: [UNLABELED, saddle, handlebar, headlight],
   },
   bird: {
+    # UNLABELED: IGNORED,
     head: [head, leye, reye, beak],
-    torso: [torso, neck, tail],
     wing: [lwing, rwing],
     leg: [lleg, lfoot, rleg, rfoot],
+    torso: [torso, neck, tail],
   },
   boat: {
-    boat: [void],
+    boat: [UNLABELED],
   },
   bottle: {
+    # UNLABELED: IGNORED,
     cap: [cap],
     body: [body],
   },
   bus: {
-    body: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, fliplate, bliplate, door, headlight],
-    wheel: [wheel],
+    # UNLABELED: IGNORED,
     window: [window],
+    wheel: [wheel],
+    body: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, fliplate, bliplate, door, headlight],
   },
   car: {
-    body: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, door],
-    license plate: [fliplate, bliplate],
+    window: [window],
     wheel: [wheel],
     light: [headlight],
-    window: [window],
+    license plate: [fliplate, bliplate],
+    body: [frontside, leftside, rightside, backside, roofside, leftmirror, rightmirror, door],
   },
   cat: {
     head: [head, leye, reye, lear, rear, nose],
-    torso: [torso, neck],
     lower leg: [lfleg, lfpa, rfleg, rfpa, lbleg, lbpa, rbleg, rbpa],
     tail: [tail],
+    torso: [torso, neck],
   },
   chair: {
-    chair: [void],
+    chair: [UNLABELED],
   },
   cow: {
     head: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn],
-    torso: [torso, neck],
-    lower leg: [lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
     tail: [tail],
+    lower leg: [lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+    torso: [torso, neck],
   },
   table: {
-    table: [void],
+    table: [UNLABELED],
   },
   dog: {
     head: [head, leye, reye, lear, rear, nose, muzzle],
-    torso: [torso, neck],
     lower leg: [lfleg, lfpa, rfleg, rfpa, lbleg, lbpa, rbleg, rbpa],
     tail: [tail],
+    torso: [torso, neck],
   },
   horse: {
     head: [head, leye, reye, lear, rear, muzzle],
+    tail: [tail],
     leg: [lfho, rfho, lbho, rbho, lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
     torso: [torso, neck],
-    tail: [tail],
   },
   motorbike: {
     wheel: [fwheel, bwheel],
-    body: [handlebar, saddle, headlight],
+    body: [UNLABELED, handlebar, saddle, headlight],
   },
   person: {
-    head: [head, leye, reye, lear, rear, lebrow, rebrow, nose, mouth, hair, neck],
-    torso: [torso],
+    head: [head, leye, reye, lear, rear, lebrow, rebrow, nose, mouth, hair],
+    torso: [neck, torso],
     lower arm: [llarm, lhand, rlarm, rhand],
     upper arm: [luarm, ruarm],
     lower leg: [llleg, lfoot, rlleg, rfoot],
@@ -98,23 +99,26 @@ part_groupings: {
   },
   sheep: {
     head: [head, leye, reye, lear, rear, muzzle, lhorn, rhorn],
-    torso: [torso, neck, tail],
     leg: [lfuleg, lflleg, rfuleg, rflleg, lbuleg, lblleg, rbuleg, rblleg],
+    torso: [torso, neck, tail],
   },
   sofa: {
-    sofa: [void],
+    sofa: [UNLABELED],
   },
   train: {
     train: [head, hfrontside, hleftside, hrightside, hbackside, hroofside, headlight, coach, cfrontside, cleftside, crightside, cbackside, croofside],
   },
   tvmonitor: {
-    frame: [void],
     screen: [screen],
+    frame: [frame],
   },
 }
 
 
-
-
-
-
+# this is used for evaluation only
+# e.g. mapping to existing problem PPP-20-58. 
+#  boat, table, chair, sofa are defined as semantic classes with parts
+l_things: [aeroplane, bicycle, bird, boat, bottle, bus, car, cat, chair, cow, table, dog, horse, motorbike, person, pottedplant, sheep, sofa, train, tvmonitor]
+l_stuff: []
+l_parts: [aeroplane, bicycle, bird, boat, bottle, bus, car, cat, chair, cow, table, dog, horse, motorbike, person, pottedplant, sheep, sofa, train, tvmonitor]
+l_no_parts: []

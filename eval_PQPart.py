@@ -1,5 +1,5 @@
 import os.path
-
+import argparse
 import numpy as np
 import json
 import yaml
@@ -15,14 +15,10 @@ sys.path.append('panoptic_parts')
 from panoptic_parts.utils.experimental_evaluation_PQPart import evaluate_PQPart_multicore
 from merge_eval_spec import PPSEvalSpec
 
-
-FILEPATH_EVALUATION_DEF = '[WIP]cpp_official_evalspec_grouped.yaml'
-FILEPATH_PATTERN_GT_PAN_PART_CPP = op.join('/home/cylu/Documents/fpsnetv2/datasets/Cityscapes/validation/part_gt',
-                                           '*', '*.tif')
-BASEPATH_PRED = "/home/cylu/Documents/fpsnetv2/datasets/Cityscapes/predictions/20200917_fpsnet_parts_0/part_panoptic_cs"
-
+DATASET = 'PPP'
 
 def filepaths_pairs_fn(filepath_pattern_gt_pan_part, basepath_pred):
+  global DATASET
   # return a list of tuples with paths
   filepaths_gt_pan_part = glob.glob(filepath_pattern_gt_pan_part)
   print(f"Found {len(filepaths_gt_pan_part)} ground truth labels.")
@@ -31,29 +27,62 @@ def filepaths_pairs_fn(filepath_pattern_gt_pan_part, basepath_pred):
     ########################
     # Adapt to your system #
     # here we use the ground truth paths for predictions
-    image_id = op.basename(fp_gt_pan_part)[:-23]
-    fp_pred = op.join(basepath_pred, image_id + "_gtFine_leftImg8bit.png")
-    assert op.isfile(fp_pred)
-    # assert False, 'delete this when adapted to your needs'
+    if DATASET == 'CPP':
+      image_id = op.basename(fp_gt_pan_part)[:-23]
+      fp_pred = op.join(basepath_pred, image_id + "_gtFine_leftImg8bit.png")
+      assert op.isfile(fp_pred)
+    else:
+      image_id = op.basename(fp_gt_pan_part)[:-4]
+      fp_pred = op.join(basepath_pred, image_id + ".png")
+      assert op.isfile(fp_pred), fp_pred
     ########################
     pairs.append((fp_gt_pan_part, fp_pred))
 
   return pairs
 
-######################
-# Adapt to your case #
-# here we assume that predictions are encoded as ground truth
+
 def pred_reader_fn(fp_pred):
-  part_pred_sample = np.array(Image.open(fp_pred)).astype(np.int32)
+  # This function assumes that predictions are saved in the 3-channel format
+  part_pred_sample = np.array(Image.open(fp_pred), dtype=np.int32)
   pan_classes = part_pred_sample[..., 0]
   pan_inst_ids = part_pred_sample[..., 1]
   parts_output = part_pred_sample[..., 2]
   return pan_classes, pan_inst_ids, parts_output
-######################
 
 
-spec = PPSEvalSpec(FILEPATH_EVALUATION_DEF)
-filepaths_pairs = filepaths_pairs_fn(FILEPATH_PATTERN_GT_PAN_PART_CPP, BASEPATH_PRED)
+def evaluate(eval_spec_path, basepath_gt, basepath_pred):
+  global DATASET
+  if DATASET == 'CPP':
+    filepath_pattern_gt_pan_part = op.join(basepath_gt, '*', '*.tif')
+  else:
+    filepath_pattern_gt_pan_part = op.join(basepath_gt, '*.tif')
 
-results = evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn)
-print(results)
+  spec = PPSEvalSpec(eval_spec_path)
+  filepaths_pairs = filepaths_pairs_fn(filepath_pattern_gt_pan_part, basepath_pred)
+
+  results = evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn)
+  print(results[0])
+  print(results[1])
+  breakpoint()
+
+
+if __name__ == '__main__':
+  # python -m eval_PQPart "[WIP]cpp_official_evalspec_grouped.yaml" \
+  #                       "/home/cylu/Documents/fpsnetv2/datasets/Cityscapes/validation/part_gt" \
+  #                       "/home/cylu/Documents/fpsnetv2/datasets/Cityscapes/predictions/20200917_fpsnet_parts_0/part_panoptic_cs"
+
+  # python -m eval_PQPart "[WIP]cpp_official_evalspec_grouped.yaml" \
+  #                       "/media/panos/data/datasets/cityscapes_parts/labelling/releases/20201021/cityscapes_panoptic_parts_v1.1/gtFine/val" \
+  #                       "/media/panos/data/logdir/part-aware-panoptic-segmentation/cpp_merged_part_aware_panseg"
+
+  # python -m eval_PQPart "[WIP]ppp_official_evalspec.yaml" \
+  #                       "/media/panos/data/datasets/pascal_panoptic_parts/releases/20210503/pascal_panoptic_parts_v2/validation" \
+  #                       "/media/panos/data/logdir/part-aware-panoptic-segmentation/ppp_merged_part_aware_panseg"
+
+  parser = argparse.ArgumentParser()
+  parser.add_argument('eval_spec_path')
+  parser.add_argument('basepath_gt')
+  parser.add_argument('basepath_pred')
+  args = parser.parse_args()
+
+  evaluate(args.eval_spec_path, args.basepath_gt, args.basepath_pred)
