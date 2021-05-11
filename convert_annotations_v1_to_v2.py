@@ -45,14 +45,16 @@ def validate():
   filepaths_v2 = [fp.replace('20201704/pascal_panoptic_parts_v1', '20210503/pascal_panoptic_parts_v2') for fp in filepaths_v1]
 
   for i, (f1, f2) in enumerate(zip(filepaths_v1, filepaths_v2)):
-    l1 = np.asarray(Image.open(f1), dtype=np.int32)
-    l2 = np.asarray(Image.open(f2), dtype=np.int32)
-    # if there are differences print the unique tuples with (uid_v1, uid_v2) corresponding
+    l1 = np.asanyarray(Image.open(f1), dtype=np.int32)
+    l2 = np.asanyarray(Image.open(f2), dtype=np.int32)
+    # if there are differences print the unique tuples with (uid_l1, uid_l2) corresponding
     # to the same spatial position
-    if not np.all(l1 == l2):
-      cond = l1 != l2
+    cond = l1 != l2
+    if np.any(cond):
       uids_tuples = np.unique(np.stack([l1[cond], l2[cond]]), axis=1)
       print(i, *(uids_tuples[:, j] for j in range(uids_tuples.shape[1])))
+    else:
+      print('No diff.')
 
 
 if __name__ == '__main__':
