@@ -188,10 +188,20 @@ def prediction_parsing(sem_map, inst_map, part_map, cat_definition, thresh=0):
 
 
 def parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid, experimental_null_id=0):
+  """
+  Parsing priority, sid_pid is mapped to:
+    1. dataset_sid_pid2eval_sid_pid[sid_pid] if it exists, else
+    2. dataset_sid_pid2eval_sid_pid[sid] if it exists, else
+    3. dataset_sid_pid2eval_sid_pid['DEFAULT'] value
+
+  Returns:
+    sid_pid2eval_id: a dense mapping having keys for all possible sid_pid s (0 to 99_99)
+      using the provided sparse dataset_sid_pid2eval_sid_pid
+  """
   dsp2spe = copy.copy(dataset_sid_pid2eval_sid_pid)
   dsp2spe_keys = dsp2spe.keys()
   dsp2spe_new = dict()
-  for k in range(99_99):
+  for k in range(10000):
     if k in dsp2spe_keys:
       dsp2spe_new[k] = dsp2spe[k]
       continue
@@ -203,8 +213,27 @@ def parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid, experimenta
       dsp2spe_new[k] = dsp2spe['DEFAULT']
       continue
     raise ValueError(f'dataset_sid_pid2eval_sid_pid does not follow the specification rules for key {k}.')
+  assert all(v in list(range(10000)) + ['IGNORED'] for v in dsp2spe_new.values())
   # replace ignored sid_pid s with the experimental_null_id
   dsp2spe_new = {k: experimental_null_id if v == 'IGNORED' else v for k, v in dsp2spe_new.items()}
+  return dsp2spe_new
+
+
+def alternative_parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid):
+  """
+  Parsing priority, sid_pid is mapped to:
+    1. dataset_sid_pid2eval_sid_pid[sid_pid] if it exists, else
+    2. to the same sid_pid
+
+  Returns:
+    sid_pid2eval_id: a dense mapping having keys for all possible sid_pid s (0 to 99_99)
+      using the provided sparse dataset_sid_pid2eval_sid_pid
+  """
+  dsp2spe_new = dict()
+  for k in range(10000):
+    sid_pid_new = dataset_sid_pid2eval_sid_pid.get(k, k)
+    dsp2spe_new[k] = sid_pid_new if sid_pid_new != 'IGNORED' else k
+  assert all(v in list(range(10000)) for v in dsp2spe_new.values()), dsp2spe_new.values()
   return dsp2spe_new
 
 
@@ -256,30 +285,13 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
   if any(k != v if v != 'IGNORED' else False for k, v in spec.dataset_sid_pid2eval_sid_pid.items()):
     # map the sids_pids of the dataset to the sids_pids of the eval_spec
     # TODO(panos): for now only the pids are mapped (the sids are assumed to be the identical)
-    dsp2esp = parse_dataset_sid_pid2eval_sid_pid(spec.dataset_sid_pid2eval_sid_pid, experimental_null_id=-1)
+    dsp2esp = alternative_parse_dataset_sid_pid2eval_sid_pid(spec.dataset_sid_pid2eval_sid_pid)
     dsp2esp = _sparse_ids_mapping_to_dense_ids_mapping(dsp2esp, -100, length=10000)
-    _, iid, _, sids_pids = decode_uids(sample, return_sids_pids=True, experimental_null_id=-1, experimental_dataset_spec=spec._dspec)
+    _, _, _, sids_pids = decode_uids(sample, return_sids_pids=True, experimental_dataset_spec=spec._dspec)
     sids_pids = dsp2esp[sids_pids]
     assert not np.any(np.equal(sids_pids, -100)), 'dataset_sid_pid2eval_sid_pid is incomplete.'
     pids = sids_pids % 100
-    pids[pids==99] = -1
     part_map = pids
-
-    # print("inst", np.unique(iid, return_counts=True))
-
-    # print("before", np.unique(part_map, return_counts=True))
-    no_inst_mask = iid == -1
-    part_map[no_inst_mask] = -1
-    # print("after", np.unique(part_map, return_counts=True))
-
-    # pids = pids.astype(np.int32)
-    
-    # print(np.unique(pids, return_counts=True))
-    
-    # debug
-    # Image.fromarray(pids, mode='I').save(op.join('/home/panos/git/github/pmeletis/metrics_design',
-    #                                      fn_pair[1][-15:]))
-    # exit()
 
   meta_dict = {}
 
@@ -296,9 +308,9 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
     for sem_idx in sem_cls:
       selected = sem_map == sem_idx
       # # delete some instances that should have parts, but actually not annotated, happening in Cityscapes
-      if len(parts_cls) > 1:
-        # if there are instances with parts not annotated as instances with parts
-        selected = np.logical_and(selected, sample // 10 ** 5 > 0)
+      # if len(parts_cls) > 1:
+      #   # if there are instances with parts not annotated as instances with parts
+      #   selected = np.logical_and(selected, sample // 10 ** 5 > 0)
       selected_ins = inst_map.copy()
       selected_ins[np.invert(selected)] = -1
       if -1 in selected_ins:
@@ -334,7 +346,7 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
           temp_parts_anno = parts_annotations[i, :, :]
           part_elements = np.unique(temp_parts_anno[temp_binary_msk > 0.5])
           if part_elements.size == 1 and 0 in part_elements:
-            print('found in valid segment in annotation, deleted')
+            print('found invalid segment in annotation, deleted')
             delete_idx.append(i)
         binary_masks = np.delete(binary_masks, delete_idx, 0)
         parts_annotations = np.delete(parts_annotations, delete_idx, 0)
