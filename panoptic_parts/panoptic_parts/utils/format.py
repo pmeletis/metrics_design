@@ -169,7 +169,7 @@ def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
       hasattr(experimental_dataset_spec, '_sid_pid_file2sid_pid')):
     if not isinstance(uids, (np.ndarray, np.int32)):
       raise NotImplementedError(
-          f'sid_pid from file mapping is only supported for np.ndarray for now. '
+          f'sid_pid from file mapping is only supported for np.ndarray and np.int32 for now. '
           f'Found {type(uids)}.')
     # spf2sp: contains 3/4-digit sid_pid mappings
     spf2sp = experimental_dataset_spec._sid_pid_file2sid_pid

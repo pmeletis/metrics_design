@@ -15,7 +15,6 @@ sys.path.append('panoptic_parts')
 from panoptic_parts.utils.experimental_evaluation_PQPart import evaluate_PQPart_multicore
 from merge_eval_spec import PPSEvalSpec
 
-DATASET = 'PPP'
 
 def filepaths_pairs_fn(filepath_pattern_gt_pan_part, basepath_pred):
   global DATASET
@@ -61,9 +60,13 @@ def evaluate(eval_spec_path, basepath_gt, basepath_pred):
   filepaths_pairs = filepaths_pairs_fn(filepath_pattern_gt_pan_part, basepath_pred)
 
   results = evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn)
-  print(results[0])
-  print(results[1])
   breakpoint()
+  print(*map(lambda d: ', '.join(map(lambda t: f'{t[0]}: {t[1]:.3f}', d.items())),
+             results[0]),
+        sep='\n')
+  print(*map(lambda t: f'{t[0]:15} ' + ', '.join(map(lambda t: f'{t[0]}: {t[1]:.3f}', t[1].items())),
+             zip(spec.eval_sid2scene_label.values(), results[1].values())),
+        sep='\n')
 
 
 if __name__ == '__main__':
@@ -78,6 +81,8 @@ if __name__ == '__main__':
   # python -m eval_PQPart "[WIP]ppp_official_evalspec.yaml" \
   #                       "/media/panos/data/datasets/pascal_panoptic_parts/releases/20210503/pascal_panoptic_parts_v2/validation" \
   #                       "/media/panos/data/logdir/part-aware-panoptic-segmentation/ppp_merged_part_aware_panseg"
+
+  DATASET = 'CPP'
 
   parser = argparse.ArgumentParser()
   parser.add_argument('eval_spec_path')

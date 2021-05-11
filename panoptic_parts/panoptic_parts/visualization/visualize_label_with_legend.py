@@ -19,7 +19,7 @@ from panoptic_parts.utils.format import decode_uids, encode_ids
 from panoptic_parts.utils.utils import _transform_uids
 import sys
 sys.path.append('/home/panos/git/github/pmeletis/metrics_design')
-from dataset_spec import DatasetSpec
+from specs.dataset_specs.dataset_spec import DatasetSpec
 
 
 def visualize_from_paths(label_path, datasetspec_path):

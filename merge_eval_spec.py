@@ -33,8 +33,6 @@ class PPSEvalSpec(object):
       espec = yaml.load(fd, Loader=yaml.Loader)
 
     self._spec_version = espec['version']
-    # self.sid_pid2eid__template = espec['sid_pid2eid__template']
-    # self.eval_id2scene_part_class = espec['eval_id2scene_part_class']
     self._dspec = DatasetSpec(espec['dataset_spec_path'])
 
     self.ignore_label = espec['ignore_label']
@@ -117,13 +115,6 @@ class PPSEvalSpec(object):
 
     self.cat_definition = cat_definition
 
-    # self.sid_pid2eval_id = parse__sid_pid2eid__v2(self.sid_pid2eid__template)
-    # TODO(panos): here we assume that IGNORE eval_id exists and is the max eval_id
-    # self.eid_ignore = max(self.sid_pid2eval_id.values())
-    # self.sp2e_np = dict_to_numpy(self.sid_pid2eval_id, self.eid_ignore)
-    # self.scene_part_classes = list(
-    #     map(itemgetter(1), sorted(self.eval_id2scene_part_class.items())))
-    # self.Nclasses = len(self.scene_part_classes)
 
 if __name__ == '__main__':
   spec = PPSEvalSpec('cpp_iouparts_24_evalspec.yaml')
