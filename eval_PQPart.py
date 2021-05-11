@@ -60,7 +60,7 @@ def evaluate(eval_spec_path, basepath_gt, basepath_pred):
   filepaths_pairs = filepaths_pairs_fn(filepath_pattern_gt_pan_part, basepath_pred)
 
   results = evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn)
-  breakpoint()
+
   print(*map(lambda d: ', '.join(map(lambda t: f'{t[0]}: {t[1]:.3f}', d.items())),
              results[0]),
         sep='\n')
