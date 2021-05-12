@@ -280,17 +280,18 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
   inst_map = inst_map.astype(np.int32)
   part_map = part_map.astype(np.int32)
 
-  # transform only if dataset_sid_pid2eval_sid_pid is not the identity mapping
-  # for CPP this is not needed
+  # transform pids according to dataset_sid_pid2eval_sid_pid only if it is not the identity mapping
+  # this applies to PPP only as parts are grouped, CPP does not group parts
   if any(k != v if v != 'IGNORED' else False for k, v in spec.dataset_sid_pid2eval_sid_pid.items()):
     # map the sids_pids of the dataset to the sids_pids of the eval_spec
-    # TODO(panos): for now only the pids are mapped (the sids are assumed to be the identical)
     dsp2esp = alternative_parse_dataset_sid_pid2eval_sid_pid(spec.dataset_sid_pid2eval_sid_pid)
     dsp2esp = _sparse_ids_mapping_to_dense_ids_mapping(dsp2esp, -100, length=10000)
     _, _, _, sids_pids = decode_uids(sample, return_sids_pids=True, experimental_dataset_spec=spec._dspec)
     sids_pids = dsp2esp[sids_pids]
     assert not np.any(np.equal(sids_pids, -100)), 'dataset_sid_pid2eval_sid_pid is incomplete.'
     pids = sids_pids % 100
+    # TODO(panos): for now only the pids are mapped, the sids are assumed to be the identical between
+    #   the dataset (sem_map) and the eval_spec, so assign only new pids to part_map
     part_map = pids
 
   meta_dict = {}
