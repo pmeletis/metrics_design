@@ -148,6 +148,9 @@ def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
   #   np.asarray: numpy implicitly converts ndarray with one element to np.int32 (which is not
   #     ndarray), moreover dtypes are implicitly converted to np.int64 for arithmetic operations
 
+  # TODO(panos): any uid that is invalid according to dataset_spec must be mapped to unlabeled
+  # e.g. invalid pid=5 for CPP rider and person: np.logical_and(np.logical_or(sids == 24, sids == 25), pids == 5)
+
   # pad uids to uniform 7-digit length
   uids_padded = where(uids <= 99_999,
                       where(uids <= 99, uids * dtype(10**5), uids * dtype(10**2)),
@@ -181,6 +184,8 @@ def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
     pids = sids_pids % 100
     pids = where(uids <= 99_999, invalid_ids, pids)
 
+  pids = where(pids == 0, invalid_ids, pids)
+
   if isinstance(uids, np.ndarray):
     sids = np.asarray(sids, dtype=np.int32)
   returns = (sids, iids, pids)
@@ -194,6 +199,9 @@ def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
     sids_pids = sids * dtype(10**2) + maximum(pids, dtype(0))
     if isinstance(uids, np.ndarray):
       sids_pids = np.asarray(sids_pids, dtype=np.int32)
+    
+    sids_pids = where(divmod_(sids_pids, 100)[1] == 0, sids, sids_pids)
+
     returns += (sids_pids,)
 
   return returns

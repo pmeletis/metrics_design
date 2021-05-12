@@ -187,7 +187,7 @@ def prediction_parsing(sem_map, inst_map, part_map, cat_definition, thresh=0):
   return meta_dict
 
 
-def parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid, experimental_null_id=0):
+def UNUSED_parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid, experimental_null_id=0):
   """
   Parsing priority, sid_pid is mapped to:
     1. dataset_sid_pid2eval_sid_pid[sid_pid] if it exists, else
@@ -219,7 +219,7 @@ def parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid, experimenta
   return dsp2spe_new
 
 
-def alternative_parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid):
+def parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid):
   """
   Parsing priority, sid_pid is mapped to:
     1. dataset_sid_pid2eval_sid_pid[sid_pid] if it exists, else
@@ -275,21 +275,24 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
 
   h, w = sample.shape
 
-  sem_map, inst_map, part_map, sids_pids = decode_uids(sample, return_sids_pids=True, experimental_null_id=0, experimental_dataset_spec=spec._dspec)
+  null_id = 0
+  sem_map, inst_map, part_map, sids_pids = decode_uids(sample,
+                                                       return_sids_pids=True,
+                                                       experimental_null_id=null_id,
+                                                       experimental_dataset_spec=spec._dspec)
   sem_map = sem_map.astype(np.int32)
   inst_map = inst_map.astype(np.int32)
   part_map = part_map.astype(np.int32)
 
-  # transform pids according to dataset_sid_pid2eval_sid_pid only if it is not the identity mapping
-  # this applies to PPP only as parts are grouped, CPP does not group parts
+  # transform the pids to the pids of the eval_spec, according to dataset_sid_pid2eval_sid_pid,
+  # this happends only if dataset_sid_pid2eval_sid_pid is not the identity mapping (k!=v), which
+  # this applies only to PPP eval_spec as parts are grouped, while CPP does not group parts
   if any(k != v if v != 'IGNORED' else False for k, v in spec.dataset_sid_pid2eval_sid_pid.items()):
-    # map the sids_pids of the dataset to the sids_pids of the eval_spec
-    dsp2esp = alternative_parse_dataset_sid_pid2eval_sid_pid(spec.dataset_sid_pid2eval_sid_pid)
-    dsp2esp = _sparse_ids_mapping_to_dense_ids_mapping(dsp2esp, -100, length=10000)
-    _, _, _, sids_pids = decode_uids(sample, return_sids_pids=True, experimental_dataset_spec=spec._dspec)
+    dsp2esp = parse_dataset_sid_pid2eval_sid_pid(spec.dataset_sid_pid2eval_sid_pid)
+    dsp2esp = _sparse_ids_mapping_to_dense_ids_mapping(dsp2esp, -10**6, length=10000) # -10**6: a random big number
     sids_pids = dsp2esp[sids_pids]
-    assert not np.any(np.equal(sids_pids, -100)), 'dataset_sid_pid2eval_sid_pid is incomplete.'
-    pids = sids_pids % 100
+    assert not np.any(np.equal(sids_pids, -10**6)), 'sanity check'
+    pids = np.where(sids_pids >= 1_00, sids_pids % 100, null_id)
     # TODO(panos): for now only the pids are mapped, the sids are assumed to be the identical between
     #   the dataset (sem_map) and the eval_spec, so assign only new pids to part_map
     part_map = pids
@@ -308,10 +311,6 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
 
     for sem_idx in sem_cls:
       selected = sem_map == sem_idx
-      # # delete some instances that should have parts, but actually not annotated, happening in Cityscapes
-      # if len(parts_cls) > 1:
-      #   # if there are instances with parts not annotated as instances with parts
-      #   selected = np.logical_and(selected, sample // 10 ** 5 > 0)
       selected_ins = inst_map.copy()
       selected_ins[np.invert(selected)] = -1
       if -1 in selected_ins:
