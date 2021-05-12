@@ -187,7 +187,7 @@ def prediction_parsing(sem_map, inst_map, part_map, cat_definition, thresh=0):
   return meta_dict
 
 
-def UNUSED_parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid, experimental_null_id=0):
+def UNUSED_parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid, experimental_no_info_id=0):
   """
   Parsing priority, sid_pid is mapped to:
     1. dataset_sid_pid2eval_sid_pid[sid_pid] if it exists, else
@@ -214,8 +214,8 @@ def UNUSED_parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid, expe
       continue
     raise ValueError(f'dataset_sid_pid2eval_sid_pid does not follow the specification rules for key {k}.')
   assert all(v in list(range(10000)) + ['IGNORED'] for v in dsp2spe_new.values())
-  # replace ignored sid_pid s with the experimental_null_id
-  dsp2spe_new = {k: experimental_null_id if v == 'IGNORED' else v for k, v in dsp2spe_new.items()}
+  # replace ignored sid_pid s with the experimental_no_info_id
+  dsp2spe_new = {k: experimental_no_info_id if v == 'IGNORED' else v for k, v in dsp2spe_new.items()}
   return dsp2spe_new
 
 
@@ -275,10 +275,10 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
 
   h, w = sample.shape
 
-  null_id = 0
+  noinfo_id = 0
   sem_map, inst_map, part_map, sids_pids = decode_uids(sample,
                                                        return_sids_pids=True,
-                                                       experimental_null_id=null_id,
+                                                       experimental_no_info_id=noinfo_id,
                                                        experimental_dataset_spec=spec._dspec)
   sem_map = sem_map.astype(np.int32)
   inst_map = inst_map.astype(np.int32)
@@ -292,7 +292,7 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
     dsp2esp = _sparse_ids_mapping_to_dense_ids_mapping(dsp2esp, -10**6, length=10000) # -10**6: a random big number
     sids_pids = dsp2esp[sids_pids]
     assert not np.any(np.equal(sids_pids, -10**6)), 'sanity check'
-    pids = np.where(sids_pids >= 1_00, sids_pids % 100, null_id)
+    pids = np.where(sids_pids >= 1_00, sids_pids % 100, noinfo_id)
     # TODO(panos): for now only the pids are mapped, the sids are assumed to be the identical between
     #   the dataset (sem_map) and the eval_spec, so assign only new pids to part_map
     part_map = pids

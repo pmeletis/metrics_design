@@ -73,6 +73,7 @@ class DatasetSpec(object):
       spec = yaml.load(fd, Loader=yaml.Loader)
 
     self._spec_version = spec['version']
+    self._dataset_name = spec['name']
     # describes the semantic information layer
     self._scene_class2part_classes = spec['scene_class2part_classes']
     # describes the instance information layer
@@ -87,6 +88,7 @@ class DatasetSpec(object):
     self._extract_attributes()
 
   def _extract_attributes(self):
+    self.dataset_name = self._dataset_name
 
     def _check_and_append_unlabeled(seq: Union[dict, list], unlabeled_dct=None):
       seq = copy.copy(seq)
@@ -116,7 +118,7 @@ class DatasetSpec(object):
     self.sid_pid2scene_class_part_class = dict()
     for sid, (scene_class, part_classes) in enumerate(self.scene_class2part_classes.items()):
       for pid, part_class in enumerate(part_classes):
-        sid_pid = sid * 100 + pid
+        sid_pid = sid if pid == 0 else sid * 100 + pid
         self.sid_pid2scene_class_part_class[sid_pid] = (scene_class, part_class)
     self.scene_class_part_class2sid_pid = {
         v: k for k, v in self.sid_pid2scene_class_part_class.items()}
@@ -146,7 +148,7 @@ class DatasetSpec(object):
         sid = self.sid_from_scene_class(scene_class)
         for part_class, pids_file in part_class2pids_grouping.items():
           for pid_file in pids_file:
-            sid_pid_file = sid * 100 + pid_file
+            sid_pid_file = sid if pid_file == 0 else sid * 100 + pid_file
             self._sid_pid_file2sid_pid[sid_pid_file] = self.scene_class_part_class2sid_pid[(scene_class, part_class)]
 
   def sid_from_scene_class(self, name):

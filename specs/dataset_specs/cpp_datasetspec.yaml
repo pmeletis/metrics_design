@@ -1,7 +1,7 @@
 version: '2.0'
 comments:
   - refer to ppp_datasetspec for now
-
+name: Cityscapes Panoptic Parts
 
 # scene_class2part_classes: An ordered mapping from scene-level class to part-level classes.
 # Refer to ppp_datasetspec for now.

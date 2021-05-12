@@ -1,4 +1,4 @@
-version: 1.0
+version: 2.0
 comments:
  First version containing all information I (Daan) think is necessary for merging to panoptic and part-aware panoptic (and it should also be usable for PartPQ evaluation)
 

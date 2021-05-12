@@ -54,20 +54,20 @@ def decode_uids_cases():
   examples = [
       [[(1,), {}], (1, -1, -1)],
       [[(1,), ersiT], (1, -1, -1, 1)],
-      [[(1,), erspT], (1, -1, -1, 100)],
-      [[(1,), ersipT], (1, -1, -1, 1, 100)],
+      [[(1,), erspT], (1, -1, -1, 1)],
+      [[(1,), ersipT], (1, -1, -1, 1, 1)],
       [[(11,), {}], (11, -1, -1)],
       [[(11,), ersiT], (11, -1, -1, 11)],
-      [[(11,), erspT], (11, -1, -1, 1100)],
-      [[(11,), ersipT], (11, -1, -1, 11, 1100)],
+      [[(11,), erspT], (11, -1, -1, 11)],
+      [[(11,), ersipT], (11, -1, -1, 11, 11)],
       [[(1_002,), {}], (1, 2, -1)],
       [[(1_002,), ersiT], (1, 2, -1, 1002)],
-      [[(1_002,), erspT], (1, 2, -1, 100)],
-      [[(1_002,), ersipT], (1, 2, -1, 1002, 100)],
+      [[(1_002,), erspT], (1, 2, -1, 1)],
+      [[(1_002,), ersipT], (1, 2, -1, 1002, 1)],
       [[(11_002,), {}], (11, 2, -1)],
       [[(11_002,), ersiT], (11, 2, -1, 11002)],
-      [[(11_002,), erspT], (11, 2, -1, 1100)],
-      [[(11_002,), ersipT], (11, 2, -1, 11002, 1100)],
+      [[(11_002,), erspT], (11, 2, -1, 11)],
+      [[(11_002,), ersipT], (11, 2, -1, 11002, 11)],
       [[(1_002_03,), {}], (1, 2, 3)],
       [[(1_002_03,), ersiT], (1, 2, 3, 1002)],
       [[(1_002_03,), erspT], (1, 2, 3, 103)],
@@ -99,7 +99,7 @@ def decode_uids_cases():
       [[(11_002_03,), ersipTd], (11, 2, 5, 11002, 1105)],
   ]
 
-  # cases: [[inputs, outputs], ...] = [[[args, kwargs], outputs], ...]
+  # cases: [[[args, kwargs], outputs], ...]
   cases = list()
   for example in examples:
     for type_fn in types_fn:
@@ -140,7 +140,7 @@ def decode_uids_test(cases):
     results = decode_uids(*case[0][0], **case[0][1])
     # print(results, case[1])
     if not _equal(results, case[1]):
-      print('case failed:', case, results)
+      raise ValueError(f'Case failed.\ncase:\ninputs: {case[0]}\nexpected results: {case[1]}\nreal results: {results}')
   print(f"decode_uids: {len(cases)} test cases completed successfully.")
 
 if __name__ == "__main__":

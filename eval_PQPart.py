@@ -16,27 +16,20 @@ from panoptic_parts.utils.experimental_evaluation_PQPart import evaluate_PQPart_
 from merge_eval_spec import PPSEvalSpec
 
 
-def filepaths_pairs_fn(filepath_pattern_gt_pan_part, basepath_pred):
-  global DATASET
-  # return a list of tuples with paths
+def filepaths_pairs_fn(dst_name, filepath_pattern_gt_pan_part, basepath_pred):
+  # returns a list of tuples with paths
   filepaths_gt_pan_part = glob.glob(filepath_pattern_gt_pan_part)
   print(f"Found {len(filepaths_gt_pan_part)} ground truth labels.")
   pairs = list()
   for fp_gt_pan_part in filepaths_gt_pan_part:
-    ########################
-    # Adapt to your system #
-    # here we use the ground truth paths for predictions
-    if DATASET == 'CPP':
+    if dst_name == 'Cityscapes Panoptic Parts':
       image_id = op.basename(fp_gt_pan_part)[:-23]
       fp_pred = op.join(basepath_pred, image_id + "_gtFine_leftImg8bit.png")
-      assert op.isfile(fp_pred)
-    else:
+    elif dst_name == 'PASCAL Panoptic Parts':
       image_id = op.basename(fp_gt_pan_part)[:-4]
       fp_pred = op.join(basepath_pred, image_id + ".png")
-      assert op.isfile(fp_pred), fp_pred
-    ########################
+    assert op.isfile(fp_pred), fp_pred
     pairs.append((fp_gt_pan_part, fp_pred))
-
   return pairs
 
 
@@ -50,14 +43,14 @@ def pred_reader_fn(fp_pred):
 
 
 def evaluate(eval_spec_path, basepath_gt, basepath_pred):
-  global DATASET
-  if DATASET == 'CPP':
+  spec = PPSEvalSpec(eval_spec_path)
+  dst_name = spec._dspec.dataset_name
+  if dst_name == 'Cityscapes Panoptic Parts':
     filepath_pattern_gt_pan_part = op.join(basepath_gt, '*', '*.tif')
-  else:
+  elif dst_name == 'PASCAL Panoptic Parts':
     filepath_pattern_gt_pan_part = op.join(basepath_gt, '*.tif')
 
-  spec = PPSEvalSpec(eval_spec_path)
-  filepaths_pairs = filepaths_pairs_fn(filepath_pattern_gt_pan_part, basepath_pred)
+  filepaths_pairs = filepaths_pairs_fn(dst_name, filepath_pattern_gt_pan_part, basepath_pred)
 
   results = evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn)
 
@@ -81,8 +74,6 @@ if __name__ == '__main__':
   # python -m eval_PQPart "[WIP]ppp_official_evalspec.yaml" \
   #                       "/media/panos/data/datasets/pascal_panoptic_parts/releases/20210503/pascal_panoptic_parts_v2/validation" \
   #                       "/media/panos/data/logdir/part-aware-panoptic-segmentation/ppp_merged_part_aware_panseg"
-
-  DATASET = 'CPP'
 
   parser = argparse.ArgumentParser()
   parser.add_argument('eval_spec_path')

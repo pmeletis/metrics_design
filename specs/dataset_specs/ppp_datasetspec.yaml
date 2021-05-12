@@ -3,6 +3,7 @@ comments:
   - A dataset specification consists of 4 fields, which fully describe the dataset in the scene-level and the part-level abstractions, and in semantic and instance information layers.
   - The specification refers to the dataset structure itself and does not induce any evaluation specification.
   - The fields `scene_class2part_classes` and `scene_classes_with_instance` are required. The fields `scene_class2color` and `countable_pids_groupings` are optional. The full description of the fields is given in DatasetSpec class and a short description is provided below.
+name: PASCAL Panoptic Parts
 
 # TODO(panos): move extensive documentation to specific README, keep only general documentation here.
 
