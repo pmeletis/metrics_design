@@ -179,7 +179,7 @@ python merge_to_pps.py \
     --panoptic_pred_dir=$PANOPTIC_PRED_DIR \
     --panoptic_pred_json=$PANOPTIC_PRED_JSON \
     --part_pred_path=$PART_PRED_PATH \
-    --images_json=$IMAGES_JSON
+    --images_json=$IMAGES_JSON \
     --output_dir=$OUTPUT_DIR
 ```
 
