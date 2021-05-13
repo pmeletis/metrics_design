@@ -2,16 +2,6 @@
 
 Here, we provide a guide for generating Part-aware Panoptic Segmentation (PPS) results as in in our CVPR paper. 
 
-### To do
-
-**To check**:
- - mIOU evaluator (check that results are the same that we get in the paper)
- - Check that sofa and other things classes with only 1 part are not evaluated at part-level, and also not merged at part-level, because that makes no sense.
-
-**TODO**:
-- Do full checks for CPP (ungrouped), CPP (grouped), PPP
-- Complete official_evalspec for Pascal
-
 ## Prepare EvalSpec and dataset information
 Before generating the Part-aware Panoptic Segmentation (PPS) results, you have to specify the dataset you wish to do this for. This consists of two parts:
 1. Defining what category definition you wish to use, by using the EvalSpec.

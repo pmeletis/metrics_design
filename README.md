@@ -35,6 +35,7 @@
  - remove the generate_ignore_info and requirements (gt_panoptic_dict, panoptic_ann_img, image_id) as this info can be extracted from tiff + dataset_spec
  - welcome page and CVPR READMEs
  - refactor eval_* scripts
+ - check mIOU evaluator (check that results are the same that we get in the paper)
 
 ## Timeline
  - 04/05: Finalize ToDo's
