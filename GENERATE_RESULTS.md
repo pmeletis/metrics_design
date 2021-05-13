@@ -176,9 +176,9 @@ It stores the PPS predictions as a 3-channel PNG in shape `[height x width x 3]`
 python merge_to_pps.py \
     --eval_spec_path=$EVAL_SPEC_PATH \
     --panoptic_pred_dir=$PANOPTIC_PRED_DIR \
-    --panoptic_pred_json=PANOPTIC_PRED_JSON \
+    --panoptic_pred_json=$PANOPTIC_PRED_JSON \
     --part_pred_path=$PART_PRED_PATH \
-    --images_json=$IMAGES_JSON
+    --images_json=$IMAGES_JSON \
     --output_dir=$OUTPUT_DIR
 ```
 
@@ -186,7 +186,7 @@ where
 
 - `$EVAL_SPEC_PATH`: path to the EvalSpec
 - `$PANOPTIC_PRED_DIR`: directory where the panoptic segmentation predictions (png files) are stored
-- `PANOPTIC_PRED_JSON`: path to the .json file with the panoptic segmentation predictions
+- `$PANOPTIC_PRED_JSON`: path to the .json file with the panoptic segmentation predictions
 - `$PART_PRED_PATH`: directory where the part predictions are stored
 - `$IMAGES_JSON`: the json file with a list of images and corresponding image ids
 - `$OUTPUT_DIR`: directory where you wish to store the part-aware panoptic segmentation predictions
