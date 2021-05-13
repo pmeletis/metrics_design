@@ -29,13 +29,14 @@ For the datasets that we define and use in our paper, we provide the `EvalSpec` 
 * `ppp_PartPQ_evalspec_default.yaml`: Panoptic Panoptic Parts default
 
 **TMP. TODO: rename these to proper names.** For now, while WIP:
-* `[WIP]cpp_official_evalspec.yaml`: Cityscapes Panoptic Parts default (parts not grouped)
-* `[WIP]cpp_official_evalspec_grouped.yaml`: Cityscapes Panoptic Parts default (similar parts grouped)
-* `[WIP]ppp_official_evalspec.yaml`: Panoptic Panoptic Parts default
+* [[WIP]cpp_official_evalspec.yaml]([WIP]cpp_official_evalspec.yaml): Cityscapes Panoptic Parts default (parts not grouped)
+* [[WIP]cpp_official_evalspec_grouped.yaml]([WIP]cpp_official_evalspec_grouped.yaml): Cityscapes Panoptic Parts default (similar parts grouped)
+* [[WIP]ppp_official_evalspec.yaml]([WIP]ppp_official_evalspec.yaml): Panoptic Panoptic Parts default
 
 
 Using these `EvalSpec` definitions, we map the label definition for the raw ground-truth to the definition that we use for evaluation.
-**NOTE**: This `EvalSpec` also determines how our merging and evaluation code expects the predictions. 
+
+**NOTE**: This `EvalSpec` also determines how our merging code expects the predictions. If you do not use the merging code, we expect you to deliver the predictions directly in the 3-channel format, as explained [here](EVALUATE_RESULTS.md).
 
 Examples for CPP default:
 * In `eval_sid2_scene_label`, we list the evaluation ids for the scene-level classes and their labels.
@@ -43,10 +44,8 @@ Examples for CPP default:
 * In `eval_pid_flat2scene_part_class`, we list the flat evaluation ids for part-level classes as we expect it in a part segmentation output:
   * Each part has a unique id (unless part grouping is used)
   * Following this, the prediction label for `person-head` is `2`, `rider-head` is `6`, etc.
-* If you do not use the merging code, we expect you to deliver the predictions in the 3-channel format, as explained HERE (**TODO: introduce link to evaluation readme**). In this case, the expected `part_id` can be determined using `eval_sid_pid2eval_pid_flat` and the other data in the `EvalSpec`.
-  * The combined `sid_pid` prediction label for `person-head` is `24_02`, so the part id is `2` (and the scene id is `24`). 
   
-You can adjust the EvalSpec according to your needs, so you can adjust the mappings and the label definition you use for evaluation.
+You can adjust the `EvalSpec` according to your needs, so you can adjust the mappings and the label definition you use for evaluation.
 
 ### Dataset information
 To run the merging scripts, we need to know what images are in a given split of a dataset. 
@@ -193,15 +192,7 @@ where
 - `$OUTPUT_DIR`: directory where you wish to store the part-aware panoptic segmentation predictions
 
 ## Evaluate results
-TODO by Chenyang
-
-```python
-evaluate_metric(eval_spec_path: str, gt_preds_paths: List(Tuple(str, str))) -> Dict(str, Union(float, list))
-```
-
-
-## Visualize results
-TODO by Panos
+We provide a step-by-step guide for evaluating PPS results. [Click here](EVALUATE_RESULTS.md).
 
 
 ## References and useful links
