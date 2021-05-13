@@ -5,18 +5,12 @@ import argparse
 from tqdm import tqdm
 from PIL import Image
 
-from panopticapi import combine_semantic_and_instance_predictions
-from pycocotools import mask
-
-from dataset_spec import DatasetSpec
 from merge_eval_spec import PPSEvalSpec
 
 from tmp_utils import get_filenames_in_dir, find_filename_in_list
 
+
 def _prepare_mappings(sid_pid2part_seg_label, void):
-  # TODO(daan): check whether it matters that this is too large
-  # TODO(daan): see if it is okay that 100 is hardcoded
-  # TODO(daan): clean up
   # Get the maximum amount of part_seg labels
   num_part_seg_labels = np.max(
     list(sid_pid2part_seg_label.values()))
@@ -29,7 +23,7 @@ def _prepare_mappings(sid_pid2part_seg_label, void):
         sids2part_seg_ids[class_id].append(sid_pid2part_seg_label[class_key])
       else:
         raise ValueError(
-          'A part_id can only be shared between different semantic classes, not within a single semantic class.')
+          'A part seg id can only be shared between different semantic classes, not within a single semantic class.')
     else:
       sids2part_seg_ids[class_id] = [sid_pid2part_seg_label[class_key]]
 
@@ -44,11 +38,12 @@ def _prepare_mappings(sid_pid2part_seg_label, void):
 
   part_seg_ids2eval_pids_per_sid = dict()
   for class_key in sids2part_seg_ids.keys():
-    arr = np.ones(num_part_seg_labels + 1, np.uint8) * void
-    arr[sids2part_seg_ids[class_key]] = sids2pids_eval[class_key]
-    part_seg_ids2eval_pids_per_sid[class_key] = arr
+    tmp = np.ones(num_part_seg_labels + 1, np.uint8) * void
+    tmp[sids2part_seg_ids[class_key]] = sids2pids_eval[class_key]
+    part_seg_ids2eval_pids_per_sid[class_key] = tmp
 
   return sids2part_seg_ids, part_seg_ids2eval_pids_per_sid
+
 
 def _create_categories_list(eval_spec):
   category_list = list()
@@ -57,7 +52,7 @@ def _create_categories_list(eval_spec):
     category_dict = dict()
     category_dict['id'] = eval_id
     category_dict['name'] = eval_spec.eval_sid2scene_label[eval_id]
-    # TODO(daan): get function in eval_spec to get (color_from_eval_id) functionality
+    # TODO: make function in eval_spec to get (eval_sid2scene_color) functionality
     category_dict['color'] = eval_spec.dataset_spec.sid2scene_color[eval_id]
     if eval_id in eval_spec.eval_sid_things:
       category_dict['isthing'] = 1
@@ -156,6 +151,7 @@ def merge(eval_spec_path,
 
     segment_count_per_cat = dict()
 
+    # Loop over all predicted panoptic segments
     for segment in annotation['segments_info']:
       segment_id = segment['id']
       cat_id = segment['category_id']
@@ -172,9 +168,8 @@ def merge(eval_spec_path,
 
       mask = pred_pan_flat == segment_id
 
-      # TODO(daan): is this the best way to see if a category has parts, or should we get it from l_parts?
       # Loop over all scene-level categories
-      if cat_id in sids2part_seg_ids.keys():
+      if cat_id in eval_spec.eval_sid_parts:
         # If category has parts
         # Check what pids are possible for the sid
         plausible_parts = sids2part_seg_ids[cat_id]
@@ -205,6 +200,9 @@ def merge(eval_spec_path,
     pred_pan_part = np.stack([class_canvas, inst_canvas, part_canvas], axis=2)
     img_pan_part = Image.fromarray(pred_pan_part.astype(np.uint8))
     img_pan_part.save(os.path.join(output_dir, file_name))
+
+  # Remove categories json file that was necessary for merging
+  os.remove(categories_json)
 
   print("Merging finished.")
 
