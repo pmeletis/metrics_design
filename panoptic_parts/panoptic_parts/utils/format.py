@@ -49,10 +49,13 @@ def _validate_uids_values_numpy_python(uids):
         'Some uids have length of 3 digits that is not allowed by the encoding format.')
 
 
-def _decode_uids_functors_and_checking(uids):
-  # this functions makes the decode_uids more clear
+def _decode_uids_functors_and_checking(uids, experimental_noinfo_id):
+  # this functions makes the decode_uids more clear by doing all checks here
   # required frameworks: Python and NumPy
   # TODO(panos): split this function into 2
+  if not isinstance(experimental_noinfo_id, int):
+    raise TypeError('experimental_noinfo_id should be a Python int.')
+
   if isinstance(uids, np.ndarray):
     if uids.dtype != np.int32:
       raise TypeError(f'{uids.dtype} is an unsupported dtype of np.ndarray uids.')
@@ -99,7 +102,7 @@ def _decode_uids_functors_and_checking(uids):
   raise TypeError(f'{type(uids)} is an unsupported type of uids.')
 
 def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
-                experimental_no_info_id=-1, experimental_dataset_spec=None):
+                experimental_noinfo_id=-1, experimental_dataset_spec=None):
   """
   Given the universal ids `uids` according to the hierarchical format described
   in README, this function returns element-wise
@@ -145,7 +148,7 @@ def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
     if return_sids_pids:
       sids_pids: same type and shape as uids, will have no -1.
   """
-  where, ones_like, divmod_, maximum, dtype, logical_and = _decode_uids_functors_and_checking(uids)
+  where, ones_like, divmod_, maximum, dtype, logical_and = _decode_uids_functors_and_checking(uids, experimental_noinfo_id)
 
   # explanation for using dtype and np.asarray in this function:
   #   dtype: numpy implicitly converts Python int literals in np.int64, we need np.int32
@@ -156,41 +159,38 @@ def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
   # e.g. invalid pid=5 for CPP rider and person: np.logical_and(np.logical_or(sids == 24, sids == 25), pids == 5)
 
   # pad uids to uniform 7-digit length, this generates a fake iid (0) for uids <= 99,
-  # but this is handled later when iids are calculated
+  # and noinfo pid (0) for uids <= 99_999, but these case are handled later
   uids_padded = where(uids <= 99_999,
                       where(uids <= 99, uids * dtype(10**5), uids * dtype(10**2)),
                       uids)
   # split uids to components (sids, iids, pids) from right to left
   sids_iids, pids = divmod_(uids_padded, dtype(10**2))
   sids, iids = divmod_(sids_iids, dtype(10**3))
-  noinfo_ids = ones_like(uids) * dtype(experimental_no_info_id)
+  noinfo_ids = ones_like(uids) * dtype(experimental_noinfo_id)
   # set invalid ids
   iids = where(uids <= 99, noinfo_ids, iids)
   # pids bearing no information are also those which have pid = 0
   pids = where(logical_and(uids <= 99_999, pids == dtype(0)), noinfo_ids, pids)
 
-  # This applies to PASCAL Panoptic Parts and removes the
-  # part-level instance information layer
-  # TODO(panos): change the experimental_dataset_spec to something else
-  # because decode_uids may be used in other places, other than reading GT files
-  # possible solution: keep only a flag to convert and make the dataset_spec script constant
+  # A mapping of pids in order to remove the part-level instance information layer.
+  # This applies to PASCAL Panoptic Parts for now.
   if (experimental_dataset_spec is not None and
       hasattr(experimental_dataset_spec, '_sid_pid_file2sid_pid')):
     if not isinstance(uids, (np.ndarray, np.int32)):
       raise NotImplementedError(
           f'sid_pid from file mapping is only supported for np.ndarray and np.int32 for now. '
           f'Given uids of type: {type(uids)}.')
-    # spf2sp: contains sid_pid mappings
     spf2sp = experimental_dataset_spec._sid_pid_file2sid_pid
     sids_pids = where(pids == noinfo_ids, sids, sids * dtype(10**2) + pids)
     spf2sp__dense = _sparse_ids_mapping_to_dense_ids_mapping(spf2sp, -10**6, length=10000) # -10**6 random number
     sids_pids = spf2sp__dense[sids_pids]
     assert not np.any(np.equal(sids_pids, -10**6)), (
-        'experimental_dataset_spec._sid_pid_file2sid_pid does not contain all pids in GT files.')
+        'Unhandled case: experimental_dataset_spec._sid_pid_file2sid_pid does not '
+        'contain all pids in GT files. Raise an issue to maintainers.')
     pids = where(sids_pids >= 1_00, sids_pids % 100, noinfo_ids)
 
   if isinstance(uids, np.ndarray):
-    sids = np.asarray(sids, dtype=np.int32)
+    sids = np.asanyarray(sids, dtype=np.int32)
   returns = (sids, iids, pids)
 
   if return_sids_iids:
@@ -201,7 +201,7 @@ def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
     if 'sids_pids' not in locals(): # save some compute
       sids_pids = where(pids == noinfo_ids, sids, sids * dtype(10**2) + pids)
     if isinstance(uids, np.ndarray):
-      sids_pids = np.asarray(sids_pids, dtype=np.int32)
+      sids_pids = np.asanyarray(sids_pids, dtype=np.int32)
     returns += (sids_pids,)
 
   return returns

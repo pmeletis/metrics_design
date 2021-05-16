@@ -114,7 +114,9 @@ class DatasetSpec(object):
     self.scene_class2color = _check_and_append_unlabeled(self._scene_class2color,
                                                          {'UNLABELED': [0, 0, 0]})
 
-    # TODO(panos): this dict does not include the sid only mappings, are they needed?
+    # self.sid_pid2scene_class_part_class is a coarse mapping (not all 0-99_99 keys are present)
+    # from sid_pid to Tuple(str, str), it contains sid_pid with format S, SS, S_PP, SS_PP
+    # where S >= 0, SS >= 0, S_PP >= 1_01, SS_PP >= 10_01, and PP >= 1
     self.sid_pid2scene_class_part_class = dict()
     for sid, (scene_class, part_classes) in enumerate(self.scene_class2part_classes.items()):
       for pid, part_class in enumerate(part_classes):
@@ -142,12 +144,17 @@ class DatasetSpec(object):
     self.sid2part_classes = {sid: part_classes
                              for sid, part_classes in enumerate(self.scene_class2part_classes.values())}
 
+    # self._sid_pid_file2sid_pid is a coarse mapping (not all 0-99_99 keys are present),  with all 
+    # possible sid_pid s in the annotation files mapped to the official sid_pid s of the dataset.
+    # This can be used to remove the part-level instance information layer
+    # from the uids in the annotation files (this only applies to PASCAL Panoptic Parts for now).
     if self._countable_pids_groupings is not None:
       self._sid_pid_file2sid_pid = {k: k for k in self.sid_pid2scene_class_part_class}
       for scene_class, part_class2pids_grouping in self._countable_pids_groupings.items():
         sid = self.sid_from_scene_class(scene_class)
         for part_class, pids_file in part_class2pids_grouping.items():
           for pid_file in pids_file:
+            assert pid_file != 0, 'Unhandled case (pid_file = 0), raise an issue to maintainers.'
             sid_pid_file = sid if pid_file == 0 else sid * 100 + pid_file
             self._sid_pid_file2sid_pid[sid_pid_file] = self.scene_class_part_class2sid_pid[(scene_class, part_class)]
 
@@ -177,8 +184,8 @@ class DatasetSpec(object):
 
 
 if __name__ == '__main__':
-  spec = DatasetSpec('ppp_datasetspec.yaml')
+  spec = DatasetSpec('specs/dataset_specs/ppp_datasetspec.yaml')
   print(*sorted(filter(lambda t: t[0] != t[1],
                        spec._sid_pid_file2sid_pid.items())), sep='\n')
-  # spec = DatasetSpec('cpp_datasetspec.yaml')
+  # spec = DatasetSpec('specs/dataset_specs/cpp_datasetspec.yaml')
   breakpoint()
