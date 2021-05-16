@@ -20,7 +20,7 @@ def _create_categories_list(eval_spec):
     category_dict = dict()
     category_dict['id'] = eval_id
     category_dict['name'] = eval_spec.eval_sid2scene_label[eval_id]
-    # TODO(daan): get function in eval_spec to get (color_from_eval_id) functionality
+    # TODO: make function in eval_spec to get (eval_sid2scene_color) functionality
     category_dict['color'] = eval_spec.dataset_spec.sid2scene_color[eval_id]
     if eval_id in eval_spec.eval_sid_things:
       category_dict['isthing'] = 1
@@ -72,7 +72,6 @@ def _instance_cs_to_coco_format(inst_pred_dir, images_list):
 
   fn_instseg = get_filenames_in_dir(inst_pred_dir)
 
-  # TODO(daan): multi-cpu processing
   for image in tqdm(images_list):
     image_id = image['id']
     h, w = image['height'], image['width']
@@ -130,7 +129,7 @@ def merge(eval_spec_path,
 
   """
   assert instseg_format in ['Cityscapes', 'COCO'], \
-    "instseg_format should be \'Cityscapes\' or \'COCO\'"
+      "instseg_format should be \'Cityscapes\' or \'COCO\'"
 
   eval_spec = PPSEvalSpec(eval_spec_path)
 
@@ -155,7 +154,7 @@ def merge(eval_spec_path,
   print("Loading instance segmentation predictions")
   # Load instance segmentation predictions
   if instseg_format == 'Cityscapes':
-    print("Converting inst seg predictions from CS to COCO format")
+    print("Converting instance segmentation predictions from CS to COCO format")
     # If in Cityscapes format, convert to expected COCO format
     inst_pred_list = _instance_cs_to_coco_format(inst_pred_path, images_list)
   elif instseg_format == 'COCO':
@@ -168,7 +167,6 @@ def merge(eval_spec_path,
   stuff_labels = eval_spec.eval_sid_stuff
   sem_pred_list = _stuff_segmentation_to_coco(sem_pred_path, images_list, stuff_labels=stuff_labels)
 
-  # TODO(daan): save these in a subfolder, together with categories.json
   instseg_json_file = os.path.join(output_dir, 'inst_pred.json')
   with open(instseg_json_file, 'w') as fp:
     json.dump(inst_pred_list, fp)
@@ -188,6 +186,11 @@ def merge(eval_spec_path,
                                                                 confidence_thr=0.5,
                                                                 overlap_thr=0.5,
                                                                 stuff_area_limit=1024)
+
+  # Remove json files that were necessary for merging
+  os.remove(semseg_json_file)
+  os.remove(instseg_json_file)
+  os.remove(categories_json)
 
   print("Merging finished.")
 

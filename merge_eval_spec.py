@@ -99,11 +99,11 @@ class PPSEvalSpec(object):
             # TODO(daan): make sure this is the behavior we want
             raise ValueError("Semantic category {} only has 1 part id defined in the EvalSpec: {}, "
                              "so in our format it is not treated as a class with parts. "
-                             "Remove it as a class with parts, in the EvalSpec.".format(sid, sids_eval2pids_eval[sid]))
+                             "In the EvalSpec, remove it as a class with parts.".format(sid, sids_eval2pids_eval[sid]))
         else:
           raise ValueError("Semantic category {} has no part ids defined in the EvalSpec, "
                            "so it cannot be treated as a class with parts. "
-                           "Remove it as a class with parts, in the EvalSpec.".format(sid))
+                           "In the EvalSpec, remove it as a class with parts.".format(sid))
       else:
         cat_def['parts_cls'] = [1]
         if sid in sids_eval2pids_eval.keys():

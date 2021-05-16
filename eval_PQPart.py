@@ -23,7 +23,7 @@ def filepaths_pairs_fn(dst_name, filepath_pattern_gt_pan_part, basepath_pred):
   pairs = list()
   for fp_gt_pan_part in filepaths_gt_pan_part:
     if dst_name == 'Cityscapes Panoptic Parts':
-      image_id = op.basename(fp_gt_pan_part)[:-23]
+      image_id = op.basename(fp_gt_pan_part)[:-24]
       fp_pred = op.join(basepath_pred, image_id + "_gtFine_leftImg8bit.png")
     elif dst_name == 'PASCAL Panoptic Parts':
       image_id = op.basename(fp_gt_pan_part)[:-4]
@@ -42,7 +42,7 @@ def pred_reader_fn(fp_pred):
   return pan_classes, pan_inst_ids, parts_output
 
 
-def evaluate(eval_spec_path, basepath_gt, basepath_pred):
+def evaluate(eval_spec_path, basepath_gt, basepath_pred, save_dir):
   spec = PPSEvalSpec(eval_spec_path)
   dst_name = spec._dspec.dataset_name
   if dst_name == 'Cityscapes Panoptic Parts':
@@ -60,6 +60,14 @@ def evaluate(eval_spec_path, basepath_gt, basepath_pred):
   print(*map(lambda t: f'{t[0]:15} ' + ', '.join(map(lambda t: f'{t[0]}: {t[1]:.3f}', t[1].items())),
              zip(spec.eval_sid2scene_label.values(), results[1].values())),
         sep='\n')
+
+  if save_dir is not None:
+    if not os.path.exists(save_dir):
+      print("Creating output directory at {}".format(save_dir))
+      os.mkdir(save_dir)
+    with open(os.path.join(save_dir, 'partpq_results.json'), 'w') as fp:
+      json.dump(results, fp)
+    print("Results saved in {}".format(os.path.join(save_dir, 'partpq_results.json')))
 
 
 if __name__ == '__main__':
@@ -79,6 +87,8 @@ if __name__ == '__main__':
   parser.add_argument('eval_spec_path')
   parser.add_argument('basepath_gt')
   parser.add_argument('basepath_pred')
+  parser.add_argument('--save_dir', type=str,
+                      help="directory where the results should be stored", default=None)
   args = parser.parse_args()
 
-  evaluate(args.eval_spec_path, args.basepath_gt, args.basepath_pred)
+  evaluate(args.eval_spec_path, args.basepath_gt, args.basepath_pred, args.save_dir)

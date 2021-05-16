@@ -2,7 +2,7 @@ version: 2.0
 comments:
  First version containing all information I (Daan) think is necessary for merging to panoptic and part-aware panoptic (and it should also be usable for PartPQ evaluation)
 
-dataset_spec_path: cpp_datasetspec.yaml
+dataset_spec_path: specs/dataset_specs/cpp_datasetspec.yaml
 
 # To be used for evaluation
 ignore_label: 255
