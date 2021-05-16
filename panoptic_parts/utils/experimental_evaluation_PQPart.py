@@ -1,4 +1,5 @@
 import os
+import sys
 import os.path as op
 import json
 import functools
@@ -237,7 +238,7 @@ def parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid):
   return dsp2spe_new
 
 
-def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
+def annotation_parsing(sample, spec, fn_pair=None):
   '''
   parse the numpy encoding defined by dataset definition.
   [optional]: drop the instances with pixels less than a threshold, which is important if loads of tiny instances exists.
@@ -255,7 +256,6 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
                                               "parts_cls": [1, 2, 3, 4, 5]
                                           }]
                           }
-          thresh: drop the instances with pixels less than a threshold
   Returns: a dict:
           {
               cat #0: {   "num_instances": int,
@@ -299,6 +299,8 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
 
   meta_dict = {}
 
+  ignore_map = np.zeros((h, w), dtype=np.int32)
+
   # cat_id is 0, 1, 2, ...,
   cat_definition = spec.cat_definition
   for cat_id in range(cat_definition['num_cats']):
@@ -314,18 +316,12 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
       selected_ins = inst_map.copy()
       selected_ins[np.invert(selected)] = -1
       if -1 in selected_ins:
-        idxs, counts = np.unique(selected_ins, return_counts=True)
+        idxs = np.unique(selected_ins)
         # get rid of -1 label stat
         idxs = idxs[1:]
-        counts = counts[1:]
       else:
         # only used if all the pixels belong to the same semantic classes, then there will be no -1 label
-        idxs, counts = np.unique(selected_ins, return_counts=True)
-
-      # drop the instances that are too small if they are with part annotations
-      if len(parts_cls) > 1:
-        idxs = idxs[counts > thresh]
-        counts = counts[counts > thresh]
+        idxs = np.unique(selected_ins)
 
       binary_masks = np.zeros((idxs.shape[0], h, w)).astype(np.int32)
       parts_annotations = np.zeros((idxs.shape[0], h, w)).astype(np.int32)
@@ -338,7 +334,8 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
           temp_parts[selected_ins == idxs[i]] = part_map[selected_ins == idxs[i]]
           parts_annotations[i, :, :] = temp_parts
 
-      # delete some instances that claimed to have parts, but actually not annotated (all zeros pixels), happening in pascal
+      # Some segments for scene-classes l_parts do not have part annotations (only the background label 0)
+      # We cannot apply part-level evaluation to these segments, so we delete them and denote them as crowd
       if len(parts_cls) > 1:
         delete_idx = []
         for i in range(idxs.shape[0]):
@@ -346,8 +343,10 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
           temp_parts_anno = parts_annotations[i, :, :]
           part_elements = np.unique(temp_parts_anno[temp_binary_msk > 0.5])
           if part_elements.size == 1 and 0 in part_elements:
+            # TODO: let's not print this, it's not really relevant since we handle this internally
             print('found invalid segment in annotation, deleted')
             delete_idx.append(i)
+            ignore_map[temp_binary_msk > 0.5] = sem_idx
         binary_masks = np.delete(binary_masks, delete_idx, 0)
         parts_annotations = np.delete(parts_annotations, delete_idx, 0)
 
@@ -363,13 +362,11 @@ def annotation_parsing(sample, spec, thresh=0, fn_pair=None):
                          'parts_annotation': parts_annotations_per_cat
                          }
 
-  return meta_dict
+  return meta_dict, ignore_map
 
 
 def generate_ignore_info_tiff(part_panoptic_gt, eval_spec):
   ignore_img = np.zeros_like(part_panoptic_gt).astype(np.uint8)
-
-  # eval_spec = PPSEvalSpec(eval_spec_path)
 
   # TODO(daan): currently, this is applied to the original part_panoptic tifs, and not to the format on which we wish to evaluate.
   # TODO(daan): this is not an issue now, but can be when using different eval_sids wrt the dataset_sids, it will be problematic
@@ -388,9 +385,10 @@ def generate_ignore_info_tiff(part_panoptic_gt, eval_spec):
 
   ignore_img[crowd] = sid_iid[crowd]
 
-  return ignore_img, None
+  return ignore_img
 
 
+# TODO: the below function is unused, so can be deleted
 def generate_ignore_info(panoptic_dict, panoptic_ann_img, image_id, void=0):
   # Create empty ignore_img and ignore_dict
   ignore_img = np.zeros_like(panoptic_ann_img).astype(np.uint8)
@@ -530,6 +528,7 @@ def pq_part(pred_meta, gt_meta, crowd_meta, cat_definition):
     masks_void = crowd_ins_dict['void_masks'].astype(np.int32)
     masks_void_and_crowd = np.logical_or(masks_void, masks_crowd)
 
+    # If a GT segment is a 'crowd' segment (things segment without instance label), do not include in evaluation
     for i in range(num_ins_gt):
       temp_gt_mask = np.logical_and(masks_gt[i, :, :], np.logical_not(masks_crowd))
       if np.sum(temp_gt_mask) == 0:
@@ -538,34 +537,45 @@ def pq_part(pred_meta, gt_meta, crowd_meta, cat_definition):
         parts_gt = np.delete(parts_gt, i, 0)
         break
 
+    # Loop over the remaining GT segments, find matches, and calculate (part-level) iou
     unmatched_pred = list(range(num_ins_pred))
     for i in range(num_ins_gt):
       temp_gt_mask = np.logical_and(masks_gt[i, :, :], np.logical_not(masks_crowd))
       temp_gt_parts = parts_gt[i, :, :]
 
+      # Loop over all predicted segments to find a match with the T
       for j in range(num_ins_pred):
         if j not in unmatched_pred: continue
         temp_pred_mask = masks_pred[j, :, :]
         temp_pred_parts = parts_pred[j, :, :]
 
+        # Calculate the instance-level IOU between the GT and the predicted segment
         mask_inter_sum = np.sum(np.logical_and(temp_gt_mask, temp_pred_mask))
         mask_union_sum = np.sum(np.logical_or(temp_gt_mask, temp_pred_mask)) - np.sum(
           np.logical_and(masks_void, temp_pred_mask))
         mask_iou = mask_inter_sum / mask_union_sum
 
+        # If the instance-level IOU between ground truth and prediction is larger than 0.5, there is a match
+        # In this case, it is a true positive, and the IOU should be evaluated
         if mask_iou > 0.5:
           unmatched_pred.remove(j)
+          # For segments of classes with parts, the IOU is the multi-class part-level IOU
           if len(cat_definition['cat_def'][cat_id]['parts_cls']) > 1:
-            # if defnied with multiple part labels
+            # The regions in the GT segment for which no parts are defined, are not used for IOU evaluation
             msk_not_defined_in_gt = np.logical_and(temp_gt_parts == 0, temp_gt_mask)
+            # The void an crowd regions in the GT are also not used for evaluation
             msk_ignore = np.logical_or(masks_void_and_crowd, msk_not_defined_in_gt)
             msk_evaluated = np.logical_not(msk_ignore)
+            # Calculate the confusion matrix for the region that is evaluated (the entire image excl. msk_evaluated)
             cm = confusion_matrix(temp_gt_parts[msk_evaluated].reshape(-1), temp_pred_parts[msk_evaluated].reshape(-1))
+            # If there is an 'unknown' prediction in the predicted segment, void_in_pred is True
             void_in_pred = 255 in np.unique(temp_pred_parts[msk_evaluated])
             if cm.size != 0:
+              # Calculate IOUs for the part classes (including background and 'unknown' predictions)
               inter = np.diagonal(cm)
               union = np.sum(cm, 0) + np.sum(cm, 1) - np.diagonal(cm)
               ious = inter / np.where(union > 0, union, np.ones_like(union))
+              # If there is an 'unknown' prediction in the segment, these pixels should not count as FPs
               if void_in_pred:
                 ious = ious[:-1]
               mean_iou = np.mean(ious)
@@ -574,11 +584,13 @@ def pq_part(pred_meta, gt_meta, crowd_meta, cat_definition):
             pq_stat[cat_id].tp += 1
             pq_stat[cat_id].iou += mean_iou
           else:
-            # if defnied without part label, i.e. part label always being 1
+            # For segments of classes without parts, the IOU is the binary instance-level IOU
             pq_stat[cat_id].tp += 1
             pq_stat[cat_id].iou += mask_iou
           break
 
+    # For the remaining unmatched predicted segments, add them as false positives
+    # if they are not matched with the void/crowd regions
     for j in range(num_ins_pred):
       if j not in unmatched_pred: continue
       temp_pred_mask = masks_pred[j, :, :]
@@ -587,6 +599,7 @@ def pq_part(pred_meta, gt_meta, crowd_meta, cat_definition):
       if mask_inter_sum / mask_pred_sum <= 0.5:
         pq_stat[cat_id].fp += 1
 
+    # The amount of false positives is the total amount of GT segments minus the GT segments that were matched (TPs)
     pq_stat[cat_id].fn = num_ins_gt - pq_stat[cat_id].tp
 
   return pq_stat
@@ -623,27 +636,28 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
     gt_pan_part_file = fn_pair[0]
     pred_file = fn_pair[1]
 
-
-    # partPQ eval starts here
-    # Load GT annotation file for this image
-
+    # PartPQ eval starts here
+    # Load GT annotation file for this image and parse to usable dictionary
     part_gt_sample = np.array(Image.open(gt_pan_part_file)).astype(np.int32)
-    part_gt_dict = annotation_parsing(part_gt_sample, spec, thresh=0, fn_pair=fn_pair)
+    part_gt_dict, ignore_img_extra = annotation_parsing(part_gt_sample, spec, fn_pair=fn_pair)
 
     # Load prediction for this image
-
     pan_classes, pan_inst_ids, parts_output = pred_reader_fn(pred_file)
 
-    # Feed to PQ_part evaluator
+    # Parse predictions into usable dictionary
     part_pred_dict = prediction_parsing(pan_classes, pan_inst_ids,
                                         parts_output, cat_definition, thresh=0)
 
-    # Generate ignore_data
-    ignore_img, _ = generate_ignore_info_tiff(part_gt_sample, spec)
+    # Generate data on crowd and void regions
+    ignore_img = generate_ignore_info_tiff(part_gt_sample, spec)
 
+    # add removed segments to crowd
+    ignore_img[ignore_img_extra != 0] = ignore_img_extra[ignore_img_extra != 0]
 
+    # Parse information about crowd and void segments to usable dictionary
     crowd_dict = ignore_img_parsing(ignore_img, cat_definition)
 
+    # calculate PartPQ per image
     temp_pq_part = pq_part(part_pred_dict, part_gt_dict, crowd_dict, cat_definition)
 
     pq_stats_split += temp_pq_part
@@ -651,7 +665,8 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
   return pq_stats_split
 
 
-def evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=multiprocessing.cpu_count()-1):
+# def evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=multiprocessing.cpu_count()-1):
+def evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=20):
 
   cat_definition = spec.cat_definition
 
