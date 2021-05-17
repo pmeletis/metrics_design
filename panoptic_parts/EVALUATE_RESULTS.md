@@ -12,11 +12,15 @@ In the `EvalSpec`, we define how we wish to evaluate the dataset. Specifically, 
 * The split between _things_ and _stuff_ categories, and _parts_ and _no-parts_ categories
 * The category definition and numbering that we expect for the predictions.
 
-For the datasets that we define and use in our paper, we provide the `EvalSpec` that we use:
-* `cpp_PartPQ_evalspec_default.yaml`: Cityscapes Panoptic Parts default
-* `ppp_PartPQ_evalspec_default.yaml`: Panoptic Panoptic Parts default
+The `EvalSpec`s have the following filename format:
+```
+{metric-name}_{dataset-name}_{num-scene-classes}_{num-part-classes}_evalspec.yaml
+```
 
-**TODO: change names**
+For the datasets that we define and use in our paper, we provide the `EvalSpec` that we use:
+* [ppq_cpp_20_23_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_cpp_20_23_evalspec.yaml): Cityscapes Panoptic Parts default (parts not grouped)
+* [ppq_cpp_20_9_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_cpp_20_9_evalspec.yaml): Cityscapes Panoptic Parts default (similar parts grouped)
+* [ppq_ppp_60_58_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_ppp_60_58_evalspec.yaml): PASCAL Panoptic Parts default
 
 ## 2. Prepare the predictions
 Before we can evaluate the results, you should make sure that the predictions are in the proper format. There are two things to be considered:
@@ -59,4 +63,16 @@ For regions where there is no prediction, or regions with `unknown` predictions,
 
 
 ## 3. Run evaluation script
-TODO: Panos or Chenyang
+Run the evaluation script from the top-level `panoptic_parts` directory as:
+
+```shell
+python -m panoptic_parts.evaluation.eval_PartPQ eval_spec_path basepath_gt basepath_pred [save_dir]
+```
+
+where:
+ - `eval_spec_path`: selected evaluation specification from Step 1
+ - `basepath_gt`: directory with ground truth files
+ - `basepath_pred`: directory with prediction files
+ - `save_dir`: optional, save the results in a json in this directory
+ 
+ For more information on the arguments run `python -m panoptic_parts.evaluation.eval_PartPQ.py -h`.

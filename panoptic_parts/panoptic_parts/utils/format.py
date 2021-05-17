@@ -22,7 +22,7 @@ try:
 except ModuleNotFoundError:
   pass
 
-from panoptic_parts.utils.utils import _sparse_ids_mapping_to_dense_ids_mapping
+from panoptic_parts.utils.utils import _sparse_ids_mapping_to_dense_ids_mapping as ndarray_from_dict
 
 # Functions that start with underscore (_) should be considered as internal.
 # All other functions belong to the public API.
@@ -182,7 +182,7 @@ def decode_uids(uids, *, return_sids_iids=False, return_sids_pids=False,
           f'Given uids of type: {type(uids)}.')
     spf2sp = experimental_dataset_spec._sid_pid_file2sid_pid
     sids_pids = where(pids == noinfo_ids, sids, sids * dtype(10**2) + pids)
-    spf2sp__dense = _sparse_ids_mapping_to_dense_ids_mapping(spf2sp, -10**6, length=10000) # -10**6 random number
+    spf2sp__dense = ndarray_from_dict(spf2sp, -10**6, length=10000) # -10**6 random number
     sids_pids = spf2sp__dense[sids_pids]
     assert not np.any(np.equal(sids_pids, -10**6)), (
         'Unhandled case: experimental_dataset_spec._sid_pid_file2sid_pid does not '

@@ -4,7 +4,7 @@ comments:
  - scene_class_new2scene_classes_old contains a mapping from the new scene-level classes to at least one of the original scene-level classes of the dataset (dataset_spec.l). Use this mapping to group or ignore scene-level classes.
  - part_groupings is a mapping from the new part-level classes to at least one of the original part-level classes of the dataset.
 
-dataset_spec_path: specs/dataset_specs/ppp_datasetspec.yaml
+dataset_spec_path: panoptic_parts/specs/dataset_specs/ppp_datasetspec.yaml
 
 
 # part_groupings provides the information of the grouped part-level classes.

@@ -3,7 +3,7 @@ This script computes the confusion matrix and prints segmentation metrics (mAcc,
 ground truth and prediction files. The main components in this script are the following:
   - ground truth and prediction files for a dataset
   - an evaluation definition YAML file
-  - the `ConfusionMatrixEvaluator` class from panoptic_parts.utils.experimental_evaluation
+  - the `ConfusionMatrixEvaluator` class from panoptic_parts.utils.experimental_evaluation_IOU
 
 The `ConfusionMatrixEvaluator` class requires:
   1. a YAML evaluation specification
@@ -35,8 +35,6 @@ Benchmarks (full resolution, Intel® Core™ i9-7900X CPU @ 3.30GHz):
   1. ~35 sec for Cityscapes Panoptic Parts val set evaluation.
   2. ~30 sec for PASCAL Panoptic Parts val set evaluation.
 """
-import sys
-sys.path.append('panoptic_parts')
 import glob
 import os.path as op
 import multiprocessing
@@ -49,7 +47,7 @@ import tensorflow as tf
 assert tf.version.VERSION[0] == '2', 'Uses TF r2.x functionality.'
 
 from panoptic_parts.utils.format import decode_uids
-from panoptic_parts.utils.experimental_evaluation import ConfusionMatrixEvaluator_v2
+from panoptic_parts.utils.experimental_evaluation_IOU import ConfusionMatrixEvaluator_v2
 from eval_spec import SegmentationPartsEvalSpec
 
 

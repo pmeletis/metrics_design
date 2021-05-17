@@ -2,8 +2,10 @@ import json
 import glob
 import os
 import argparse
+
 from tqdm import tqdm
 from PIL import Image
+
 
 def create_image_list(dataset_dir, output_dir, dataset=None):
   """

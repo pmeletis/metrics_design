@@ -2,19 +2,12 @@
 This module contains tools for handling evaluation specifications.
 """
 import warnings
-import sys
-sys.path.append('panoptic_parts')
 import yaml
-import platform
-from operator import itemgetter
 
-from panoptic_parts.utils.experimental_evaluation import parse__sid_pid2eid__v2
-from panoptic_parts.utils.utils import (
-    _sparse_ids_mapping_to_dense_ids_mapping as dict_to_numpy)
-from specs.dataset_specs.dataset_spec import DatasetSpec
+from panoptic_parts.specs.dataset_spec import DatasetSpec
 
 
-class PPSEvalSpec(object):
+class PPQEvalSpec(object):
   """
   This class creates an evaluation specification from a YAML specification file and provides
   convenient attributes from the specification and useful functions. Moreover, it provides
@@ -117,5 +110,5 @@ class PPSEvalSpec(object):
 
 
 if __name__ == '__main__':
-  spec = PPSEvalSpec('cpp_iouparts_24_evalspec.yaml')
+  spec = PPQEvalSpec('cpp_iouparts_24_evalspec.yaml')
   breakpoint()

@@ -1,16 +1,15 @@
 import os
 import argparse
 import json
+
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
-
 from panopticapi import combine_semantic_and_instance_predictions
 from pycocotools import mask
 
-from merge_eval_spec import PPSEvalSpec
-
-from tmp_utils import get_filenames_in_dir, find_filename_in_list
+from panoptic_parts.specs.merge_eval_spec import PPQEvalSpec
+from panoptic_parts.utils.tmp_utils import get_filenames_in_dir, find_filename_in_list
 
 
 def _create_categories_list(eval_spec):
@@ -131,7 +130,7 @@ def merge(eval_spec_path,
   assert instseg_format in ['Cityscapes', 'COCO'], \
       "instseg_format should be \'Cityscapes\' or \'COCO\'"
 
-  eval_spec = PPSEvalSpec(eval_spec_path)
+  eval_spec = PPQEvalSpec(eval_spec_path)
 
   # If the output directory does not exist, create it
   if not os.path.exists(output_dir):

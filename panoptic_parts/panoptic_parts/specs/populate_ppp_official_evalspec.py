@@ -1,7 +1,7 @@
 import yaml
 
-from specs.dataset_specs.dataset_spec import DatasetSpec
-from merge_eval_spec import PPSEvalSpec
+from panoptic_parts.specs.dataset_spec import DatasetSpec
+from panoptic_parts.specs.merge_eval_spec import PPQEvalSpec
 
 
 with open('ppp_20_58_iou_evalspec.yaml') as fd:
@@ -9,7 +9,7 @@ with open('ppp_20_58_iou_evalspec.yaml') as fd:
 
 dspec = DatasetSpec(gspec['dataset_spec_path'])
 
-with open('[WIP]ppp_official_evalspec.yaml') as fd:
+with open('ppq_ppp_60_58_evalspec.yaml') as fd:
   espec = yaml.load(fd, Loader=yaml.Loader)
 
 

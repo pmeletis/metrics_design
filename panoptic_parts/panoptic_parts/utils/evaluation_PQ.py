@@ -1,3 +1,8 @@
+"""
+Library for PQ-based evaluation functions.
+
+TODO: add License for copied code
+"""
 import os
 import sys
 import os.path as op
@@ -6,12 +11,14 @@ import functools
 import traceback
 import multiprocessing
 import copy
+from collections import defaultdict
+
 import numpy as np
 from PIL import Image
-from collections import defaultdict
 from sklearn.metrics import confusion_matrix
+
 from panoptic_parts.utils.format import decode_uids
-from panoptic_parts.utils.utils import _sparse_ids_mapping_to_dense_ids_mapping
+from panoptic_parts.utils.utils import _sparse_ids_mapping_to_dense_ids_mapping as ndarray_from_dict
 
 
 class PQStatCat():
@@ -82,9 +89,9 @@ class PQStat():
         sq_np += sq_class
         rq_np += rq_class
 
-    return [{'pq': pq / n, 'sq': sq / n, 'rq': rq / n, 'n': n},
-            {'pq_p': pq_p / n_p, 'sq_p': sq_p / n_p, 'rq_p': rq_p / n_p, 'n_p': n_p},
-            {'pq_np': pq_np / n_np, 'sq_np': sq_np / n_np, 'rq_np': rq_np / n_np, 'n_np': n_np}], per_class_results
+    return [{'PartPQ': pq / n, 'PartSQ': sq / n, 'PartRQ': rq / n, 'n': n},
+            {'PartPQ_parts': pq_p / n_p, 'PartPQ_parts': sq_p / n_p, 'PartPQ_parts': rq_p / n_p, 'n_p': n_p},
+            {'PartPQ_noparts': pq_np / n_np, 'PartPQ_noparts': sq_np / n_np, 'PartPQ_noparts': rq_np / n_np, 'n_np': n_np}], per_class_results
 
 
 def prediction_parsing(sem_map, inst_map, part_map, cat_definition, thresh=0):
@@ -289,7 +296,7 @@ def annotation_parsing(sample, spec, fn_pair=None):
   # this applies only to PPP eval_spec as parts are grouped, while CPP does not group parts
   if any(k != v if v != 'IGNORED' else False for k, v in spec.dataset_sid_pid2eval_sid_pid.items()):
     dsp2esp = parse_dataset_sid_pid2eval_sid_pid(spec.dataset_sid_pid2eval_sid_pid)
-    dsp2esp = _sparse_ids_mapping_to_dense_ids_mapping(dsp2esp, -10**6, length=10000) # -10**6: a random big number
+    dsp2esp = ndarray_from_dict(dsp2esp, -10**6, length=10000) # -10**6: a random big number
     sids_pids = dsp2esp[sids_pids]
     assert not np.any(np.equal(sids_pids, -10**6)), 'sanity check'
     pids = np.where(sids_pids >= 1_00, sids_pids % 100, noinfo_id)
@@ -343,8 +350,6 @@ def annotation_parsing(sample, spec, fn_pair=None):
           temp_parts_anno = parts_annotations[i, :, :]
           part_elements = np.unique(temp_parts_anno[temp_binary_msk > 0.5])
           if part_elements.size == 1 and 0 in part_elements:
-            # TODO: let's not print this, it's not really relevant since we handle this internally
-            print('found invalid segment in annotation, deleted')
             delete_idx.append(i)
             ignore_map[temp_binary_msk > 0.5] = sem_idx
         binary_masks = np.delete(binary_masks, delete_idx, 0)
@@ -388,8 +393,8 @@ def generate_ignore_info_tiff(part_panoptic_gt, eval_spec):
   return ignore_img
 
 
-# TODO: the below function is unused, so can be deleted
-def generate_ignore_info(panoptic_dict, panoptic_ann_img, image_id, void=0):
+# will be deleted in the final refactoring pass
+def UNUSED_generate_ignore_info(panoptic_dict, panoptic_ann_img, image_id, void=0):
   # Create empty ignore_img and ignore_dict
   ignore_img = np.zeros_like(panoptic_ann_img).astype(np.uint8)
   ignore_dict = dict()
@@ -665,8 +670,8 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
   return pq_stats_split
 
 
-# def evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=multiprocessing.cpu_count()-1):
-def evaluate_PQPart_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=20):
+# def evaluate_PartPQ_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=multiprocessing.cpu_count()-1):
+def evaluate_PartPQ_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=20):
 
   cat_definition = spec.cat_definition
 

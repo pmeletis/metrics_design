@@ -2,12 +2,12 @@ import numpy as np
 import os
 import json
 import argparse
+
 from tqdm import tqdm
 from PIL import Image
 
-from merge_eval_spec import PPSEvalSpec
-
-from tmp_utils import get_filenames_in_dir, find_filename_in_list
+from panoptic_parts.specs.merge_eval_spec import PPQEvalSpec
+from panoptic_parts.utils.tmp_utils import get_filenames_in_dir, find_filename_in_list
 
 
 def _prepare_mappings(sid_pid2part_seg_label, void):
@@ -82,7 +82,7 @@ def merge(eval_spec_path,
   Returns:
 
   """
-  eval_spec = PPSEvalSpec(eval_spec_path)
+  eval_spec = PPQEvalSpec(eval_spec_path)
 
   # If the output directory does not exist, create it
   if not os.path.exists(output_dir):
