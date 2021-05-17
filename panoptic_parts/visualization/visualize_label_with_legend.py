@@ -17,8 +17,6 @@ import yaml
 from panoptic_parts.utils.visualization import (experimental_colorize_label, uid2color)
 from panoptic_parts.utils.format import decode_uids, encode_ids
 from panoptic_parts.utils.utils import _transform_uids
-import sys
-sys.path.append('/home/panos/git/github/pmeletis/metrics_design')
 from specs.dataset_specs.dataset_spec import DatasetSpec
 
 

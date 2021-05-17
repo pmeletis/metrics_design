@@ -1,3 +1,6 @@
+"""
+Library for IOU-based evaluation functions.
+"""
 import multiprocessing
 
 from PIL import Image
