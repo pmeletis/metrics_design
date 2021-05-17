@@ -67,13 +67,13 @@ class PQStat():
       fp = self.pq_per_cat[label].fp
       fn = self.pq_per_cat[label].fn
       if tp + fp + fn == 0:
-        per_class_results[label] = {'pq': 0.0, 'sq': 0.0, 'rq': 0.0}
+        per_class_results[label] = {'PartPQ': 0.0, 'PartSQ': 0.0, 'PartRQ': 0.0}
         continue
       n += 1
       pq_class = iou / (tp + 0.5 * fp + 0.5 * fn)
       sq_class = iou / tp if tp != 0 else 0
       rq_class = tp / (tp + 0.5 * fp + 0.5 * fn)
-      per_class_results[label] = {'pq': pq_class, 'sq': sq_class, 'rq': rq_class}
+      per_class_results[label] = {'PartPQ': pq_class, 'PartSQ': sq_class, 'PartRQ': rq_class}
       pq += pq_class
       sq += sq_class
       rq += rq_class
@@ -90,17 +90,15 @@ class PQStat():
         rq_np += rq_class
 
     return [{'PartPQ': pq / n, 'PartSQ': sq / n, 'PartRQ': rq / n, 'n': n},
-            {'PartPQ_parts': pq_p / n_p, 'PartPQ_parts': sq_p / n_p, 'PartPQ_parts': rq_p / n_p, 'n_p': n_p},
-            {'PartPQ_noparts': pq_np / n_np, 'PartPQ_noparts': sq_np / n_np, 'PartPQ_noparts': rq_np / n_np, 'n_np': n_np}], per_class_results
+            {'PartPQ_parts': pq_p / n_p, 'PartSQ_parts': sq_p / n_p, 'PartRQ_parts': rq_p / n_p, 'n_p': n_p},
+            {'PartPQ_noparts': pq_np / n_np, 'PartSQ_noparts': sq_np / n_np, 'PartRQ_noparts': rq_np / n_np, 'n_np': n_np}], per_class_results
 
 
-def prediction_parsing(sem_map, inst_map, part_map, cat_definition, thresh=0):
+def prediction_parsing(cat_definition, sem_map, inst_map, part_map):
   '''
   parse the predictions (macro-semantic map, instance map, part-semantic map) into the dict format for evaluation.
-  [optional]: drop the instances with pixels less than a threshold, which is important if loads of tiny instances exists.
 
-  Args:   sem_map, inst_map, part_map: 2D numpy arrays, with the same size (H,W)
-          cat_definition: e.g.
+  Args:   cat_definition: e.g.
                           {
                               "num_cats": 2,
                               "cat_def":  [{
@@ -112,7 +110,8 @@ def prediction_parsing(sem_map, inst_map, part_map, cat_definition, thresh=0):
                                               "parts_cls": [1, 2, 3, 4, 5]
                                           }]
                           }
-          thresh: drop the instances with pixles less than a threshhold
+          sem_map, inst_map, part_map: 2D numpy arrays, with the same size (H,W)
+
   Returns: a dict:
           {
               cat #0: {   "num_instances": int,
@@ -163,11 +162,6 @@ def prediction_parsing(sem_map, inst_map, part_map, cat_definition, thresh=0):
       else:
         # only if all the pixels belong to the same semantic classes, then there will be no -1 label
         idxs, counts = np.unique(selected_ins, return_counts=True)
-
-      # drop the instances that are too small if they are with part annotations
-      if len(parts_cls) > 1:
-        idxs = idxs[counts > thresh]
-        counts = counts[counts > thresh]
 
       binary_masks = np.zeros((idxs.shape[0], h, w)).astype(np.int32)
       parts_annotations = np.zeros((idxs.shape[0], h, w)).astype(np.int32)
@@ -245,12 +239,11 @@ def parse_dataset_sid_pid2eval_sid_pid(dataset_sid_pid2eval_sid_pid):
   return dsp2spe_new
 
 
-def annotation_parsing(sample, spec, fn_pair=None):
+def annotation_parsing(spec, sample):
   '''
   parse the numpy encoding defined by dataset definition.
-  [optional]: drop the instances with pixels less than a threshold, which is important if loads of tiny instances exists.
 
-  Args:   sample: a numpy array with ground truth annotation
+  Args:   
           spec.cat_definition: e.g.
                           {
                               "num_cats": 2,
@@ -263,6 +256,8 @@ def annotation_parsing(sample, spec, fn_pair=None):
                                               "parts_cls": [1, 2, 3, 4, 5]
                                           }]
                           }
+          sample: a numpy array with ground truth annotation
+
   Returns: a dict:
           {
               cat #0: {   "num_instances": int,
@@ -636,7 +631,7 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
   # Loop over all predictions
   for fn_pair in fn_pairs:
     counter += 1
-    if counter % (len(fn_pairs) // 5) == 0:
+    if counter % (len(fn_pairs) // 5) == 0: # print progress 5 times in total 
       print(f'core {proc_id}: {counter}/{len(fn_pairs)}')
     gt_pan_part_file = fn_pair[0]
     pred_file = fn_pair[1]
@@ -644,14 +639,14 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
     # PartPQ eval starts here
     # Load GT annotation file for this image and parse to usable dictionary
     part_gt_sample = np.array(Image.open(gt_pan_part_file)).astype(np.int32)
-    part_gt_dict, ignore_img_extra = annotation_parsing(part_gt_sample, spec, fn_pair=fn_pair)
+    part_gt_dict, ignore_img_extra = annotation_parsing(spec, part_gt_sample)
 
     # Load prediction for this image
     pan_classes, pan_inst_ids, parts_output = pred_reader_fn(pred_file)
 
     # Parse predictions into usable dictionary
-    part_pred_dict = prediction_parsing(pan_classes, pan_inst_ids,
-                                        parts_output, cat_definition, thresh=0)
+    part_pred_dict = prediction_parsing(cat_definition, pan_classes,
+                                        pan_inst_ids, parts_output)
 
     # Generate data on crowd and void regions
     ignore_img = generate_ignore_info_tiff(part_gt_sample, spec)
@@ -670,8 +665,12 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
   return pq_stats_split
 
 
-# def evaluate_PartPQ_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=multiprocessing.cpu_count()-1):
-def evaluate_PartPQ_multicore(spec, filepaths_pairs, pred_reader_fn, cpu_num=20):
+def evaluate_PartPQ_multicore(spec,
+                              filepaths_pairs,
+                              pred_reader_fn,
+                              cpu_num=round(multiprocessing.cpu_count()/2)):
+
+  assert len(filepaths_pairs) >= cpu_num
 
   cat_definition = spec.cat_definition
 
