@@ -113,12 +113,3 @@ part_groupings: {
     frame: [frame],
   },
 }
-
-
-# this is used for evaluation only
-# e.g. mapping to existing problem PPP-20-58. 
-#  boat, table, chair, sofa are defined as semantic classes with parts
-l_things: [aeroplane, bicycle, bird, boat, bottle, bus, car, cat, chair, cow, table, dog, horse, motorbike, person, pottedplant, sheep, sofa, train, tvmonitor]
-l_stuff: []
-l_parts: [aeroplane, bicycle, bird, boat, bottle, bus, car, cat, chair, cow, table, dog, horse, motorbike, person, pottedplant, sheep, sofa, train, tvmonitor]
-l_no_parts: []
