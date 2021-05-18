@@ -8,7 +8,7 @@ Before generating the Part-aware Panoptic Segmentation (PPS) results, you have t
 2. Defining which images your dataset contains, and what their properties are.
 
 ### EvalSpec
-In the EvalSpec, we define the following properties
+In the `EvalSpec`, we define the following properties
 * The classes that are to be evaluated, both on scene-level and part-level
 * The split between _things_ and _stuff_ categories, and _parts_ and _no-parts_ categories
 * The category definition and numbering that we expect for the predictions.
