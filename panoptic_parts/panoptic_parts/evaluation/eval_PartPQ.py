@@ -10,16 +10,38 @@ from PIL import Image
 
 from panoptic_parts.specs.merge_eval_spec import PPQEvalSpec
 from panoptic_parts.utils.evaluation_PQ import evaluate_PartPQ_multicore
+from panoptic_parts.utils.tmp_utils import get_filenames_in_dir, find_filename_in_list
 
 
-def filepaths_pairs_fn(dst_name, basepath_gt, basepath_pred):
+def filepaths_pairs_fn(basepath_gt, basepath_pred, images_json):
   # returns a list of tuples with paths
-  
+  pairs = list()
+
+  with open(images_json, 'r') as fp:
+    images_dict = json.load(fp)
+  images_list = images_dict['images']
+
+  filenames_gt = get_filenames_in_dir(basepath_gt)
+  filenames_pred = get_filenames_in_dir(basepath_pred)
+
+  for image in images_list:
+    image_id = image['id']
+    image_id = str(image_id)
+    fp_gt = find_filename_in_list(image_id, filenames_gt, subject='PPS ground-truth', ext='.tif')
+    fp_pred = find_filename_in_list(image_id, filenames_pred, subject='ground-truth PPS', ext='.png')
+    pairs.append((fp_gt, fp_pred))
+
+  print(f"Found {len(pairs)} ground truth images and corresponding predictions.")
+  return pairs
+
+def filepaths_pairs_fn_OLD(dst_name, basepath_gt, basepath_pred):
+  # returns a list of tuples with paths
+
   if dst_name == 'Cityscapes Panoptic Parts':
     filepath_pattern_gt_pan_part = op.join(basepath_gt, '*', '*.tif')
   elif dst_name == 'PASCAL Panoptic Parts':
     filepath_pattern_gt_pan_part = op.join(basepath_gt, '*.tif')
-    
+
   filepaths_gt_pan_part = glob.glob(filepath_pattern_gt_pan_part)
   print(f"Found {len(filepaths_gt_pan_part)} ground truth labels.")
   pairs = list()
@@ -50,11 +72,22 @@ def pred_reader_fn(fp_pred):
   return pan_classes, pan_inst_ids, parts_output
 
 
-def evaluate(eval_spec_path, basepath_gt, basepath_pred, save_dir=None):
+def evaluate(eval_spec_path, basepath_gt, basepath_pred, images_json, save_dir=None):
+  """
+
+  :param eval_spec_path: filepath of the evaluation specification (EvalSpec)
+  :param basepath_gt: directory containing the ground truth files as downloaded from the original source
+  :param basepath_pred: directory containing the PPS predictions in the 3-channel PNG format.
+  :param images_json: path to the images.json file with a list of images and corresponding image ids.
+  :param save_dir: directory where the results should be stored
+
+  :return:
+  """
+  print('Evaluating the PPS results in {} on the PartPQ metric... (this can take a while)'.format(basepath_pred))
   spec = PPQEvalSpec(eval_spec_path)
 
-  dst_name = spec._dspec.dataset_name
-  filepaths_pairs = filepaths_pairs_fn(dst_name, basepath_gt, basepath_pred)
+  # dst_name = spec._dspec.dataset_name
+  filepaths_pairs = filepaths_pairs_fn(basepath_gt, basepath_pred, images_json)
 
   results = evaluate_PartPQ_multicore(spec, filepaths_pairs, pred_reader_fn)
 
@@ -90,8 +123,10 @@ if __name__ == '__main__':
   parser.add_argument('basepath_pred', type=str,
                       help="directory containing PNG predictions with filename '<image_id>.png', "
                            "where <image_id> correspond to the filename of the GT files.")
+  parser.add_argument('images_json', type=str,
+                      help="the json file with a list of images and corresponding image ids.")
   parser.add_argument('--save_dir', type=str,
                       help="directory where the results should be stored", default=None)
   args = parser.parse_args()
 
-  evaluate(args.eval_spec_path, args.basepath_gt, args.basepath_pred, args.save_dir)
+  evaluate(args.eval_spec_path, args.basepath_gt, args.basepath_pred, args.images_json, args.save_dir)
