@@ -115,18 +115,17 @@ def merge(eval_spec_path,
           instseg_format='COCO'):
   """
 
-  Args:
-    eval_spec_path: path to the EvalSpec
-    inst_pred_path: path where the instance segmentation predictions are stored
+  :param eval_spec_path: path to the EvalSpec
+  :param inst_pred_path: path where the instance segmentation predictions are stored
       (a directory when instseg_format='Cityscapes', a JSON file when instseg_format='COCO')
-    sem_pred_path: path where the semantic segmentation predictions are stored
-    output_dir: directory where you wish to store the panoptic segmentation predictions
-    images_json: the json file with a list of images and corresponding image ids
-    instseg_format: instance segmentation encoding format (either 'COCO' or 'Cityscapes')
+  :param sem_pred_path: path where the semantic segmentation predictions are stored
+  :param output_dir: directory where you wish to store the panoptic segmentation predictions
+  :param images_json: the json file with a list of images and corresponding image ids
+  :param instseg_format: instance segmentation encoding format (either 'COCO' or 'Cityscapes')
 
-  Returns:
-
+  :return:
   """
+
   assert instseg_format in ['Cityscapes', 'COCO'], \
       "instseg_format should be \'Cityscapes\' or \'COCO\'"
 
@@ -154,9 +153,13 @@ def merge(eval_spec_path,
   # Load instance segmentation predictions
   if instseg_format == 'Cityscapes':
     print("Converting instance segmentation predictions from CS to COCO format")
+    assert os.path.isdir(inst_pred_path), "When instseg_format = 'Cityscapes', inst_pred_path should be a directory." \
+                                          "Currently, inst_pred_path is {}.".format(inst_pred_path)
     # If in Cityscapes format, convert to expected COCO format
     inst_pred_list = _instance_cs_to_coco_format(inst_pred_path, images_list)
   elif instseg_format == 'COCO':
+    assert inst_pred_path.endswith('.json'), "When instseg_format = 'COCO', inst_pred_path should be a json file." \
+                                             "Currently, inst_pred_path is {}.".format(inst_pred_path)
     # If in COCO format, load the json file into a list
     with open(inst_pred_path, 'r') as fp:
       inst_pred_list = json.load(fp)
@@ -199,15 +202,15 @@ if __name__ == '__main__':
     description="Merges semantic and instance segmentation predictions to panoptic segmentation results."
   )
 
-  parser.add_argument('--eval_spec_path', type=str,
+  parser.add_argument('eval_spec_path', type=str,
                       help="path to the EvalSpec")
-  parser.add_argument('--inst_pred_path', type=str,
+  parser.add_argument('inst_pred_path', type=str,
                       help="path where the instance segmentation predictions are stored (a directory when instseg_format='Cityscapes', a JSON file when instseg_format='COCO')")
-  parser.add_argument('--sem_pred_path', type=str,
+  parser.add_argument('sem_pred_path', type=str,
                       help="path where the semantic segmentation predictions are stored")
-  parser.add_argument('--output_dir', type=str,
+  parser.add_argument('output_dir', type=str,
                       help="directory where you wish to store the panoptic segmentation predictions")
-  parser.add_argument('--images_json', type=str,
+  parser.add_argument('images_json', type=str,
                       help="the json file with a list of images and corresponding image ids")
   parser.add_argument('--instseg_format', type=str,
                       help="instance segmentation encoding format (either 'COCO' or 'Cityscapes')", default='COCO')
