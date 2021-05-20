@@ -49,6 +49,9 @@ class PPQEvalSpec(object):
     eval_sid_pid_total.remove('IGNORED')
     self.eval_sid_pid_total = list(eval_sid_pid_total)
 
+    assert max(self.eval_sid_total) <= 99, "sid should not be larger than 99_99"
+    assert max(self.eval_sid_pid_total) <= 9999, "sid_pid should not be larger than 99_99"
+
     # NEW:
     self.eval_sid_things = espec['eval_sid_things']
     self.eval_sid_stuff = espec['eval_sid_stuff']
@@ -77,6 +80,21 @@ class PPQEvalSpec(object):
           sids_eval2pids_eval[class_id].append(class_key % 100)
       else:
         sids_eval2pids_eval[class_id] = [class_key % 100]
+
+    for class_key in self.eval_sid_pid_total:
+      scene_id = class_key // 100
+      part_id = class_key % 100
+      assert part_id != self.ignore_label, \
+        "part-level class cannot be the same as ignore label: {}".format(self.ignore_label)
+      assert part_id != 0, "part-level class cannot be 0. sid_pid: {}".format(class_key)
+      assert part_id >= 0, "part-level class cannot be a negative number: {}".format(part_id)
+      assert part_id <= 99, "part-level class cannot be larger than 99: {}".format(part_id)
+
+      assert scene_id != self.ignore_label, \
+        "scene-level class cannot be the same as ignore label: {}".format(self.ignore_label)
+      assert scene_id != 0, "scene-level class cannot be 0. sid_pid: {}".format(class_key)
+      assert scene_id >= 0, "scene-level class cannot be a negative number: {}".format(scene_id)
+      assert scene_id <= 99, "scene-level class cannot be larger than 99: {}".format(scene_id)
 
     cat_definition = dict()
     cat_definition['num_cats'] = len(self.eval_sid_total)

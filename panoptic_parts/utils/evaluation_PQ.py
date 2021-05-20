@@ -138,7 +138,6 @@ def prediction_parsing(cat_definition, sem_map, inst_map, part_map):
   inst_map = inst_map.astype(np.int32)
   part_map = part_map.astype(np.int32)
 
-
   meta_dict = {}
 
   # cat_id is 0, 1, 2, ...,
@@ -475,7 +474,7 @@ def ignore_img_parsing(sample, cat_definition):
   return meta_dict
 
 
-def pq_part(pred_meta, gt_meta, crowd_meta, cat_definition):
+def pq_part(pred_meta, gt_meta, crowd_meta, cat_definition, pred_void_label):
   '''
 
   Args: three meta_dict of the prediction and ground truth, and crowd_instances with definition:
@@ -519,6 +518,9 @@ def pq_part(pred_meta, gt_meta, crowd_meta, cat_definition):
     num_ins_pred = pred_ins_dict['num_instances']
     masks_pred = pred_ins_dict['binary_masks'].astype(np.int32)
     parts_pred = pred_ins_dict['parts_annotation'].astype(np.int32)
+    # Set void label
+    if pred_void_label != 255:
+      parts_pred[parts_pred == pred_void_label] = 255
 
     num_ins_gt = gt_ins_dict['num_instances']
     masks_gt = gt_ins_dict['binary_masks'].astype(np.int32)
@@ -658,7 +660,7 @@ def evaluate_single_core(proc_id, fn_pairs, pred_reader_fn, spec):
     crowd_dict = ignore_img_parsing(ignore_img, cat_definition)
 
     # calculate PartPQ per image
-    temp_pq_part = pq_part(part_pred_dict, part_gt_dict, crowd_dict, cat_definition)
+    temp_pq_part = pq_part(part_pred_dict, part_gt_dict, crowd_dict, cat_definition, spec.ignore_label)
 
     pq_stats_split += temp_pq_part
 

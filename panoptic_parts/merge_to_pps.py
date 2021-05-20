@@ -70,17 +70,14 @@ def merge(eval_spec_path,
           images_json,
           output_dir):
   """
+  :param eval_spec_path: path to the EvalSpec
+  :param panoptic_pred_dir: directory where the panoptic segmentation predictions (png files) are stored
+  :param panoptic_pred_json: path to the .json file with the panoptic segmentation predictions
+  :param part_pred_path: directory where the part predictions are stored
+  :param images_json: the json file with a list of images and corresponding image ids
+  :param output_dir: directory where you wish to store the part-aware panoptic segmentation predictions
 
-  Args:
-    eval_spec_path: path to the EvalSpec
-    panoptic_pred_dir: directory where the panoptic segmentation predictions (png files) are stored
-    panoptic_pred_json: path to the .json file with the panoptic segmentation predictions
-    part_pred_path: directory where the part predictions are stored
-    images_json: the json file with a list of images and corresponding image ids
-    output_dir: directory where you wish to store the part-aware panoptic segmentation predictions
-
-  Returns:
-
+  :return:
   """
   eval_spec = PPQEvalSpec(eval_spec_path)
 
@@ -212,17 +209,17 @@ if __name__ == '__main__':
     description="Merges panoptic and part segmentation predictions to part-aware panoptic segmentation results."
   )
 
-  parser.add_argument('--eval_spec_path', type=str,
+  parser.add_argument('eval_spec_path', type=str,
                       help="path to the EvalSpec")
-  parser.add_argument('--panoptic_pred_dir', type=str,
+  parser.add_argument('panoptic_pred_dir', type=str,
                       help="directory where the panoptic segmentation predictions (png files) are stored")
-  parser.add_argument('--panoptic_pred_json', type=str,
+  parser.add_argument('panoptic_pred_json', type=str,
                       help="path to the .json file with the panoptic segmentation predictions")
-  parser.add_argument('--part_pred_path', type=str,
+  parser.add_argument('part_pred_path', type=str,
                       help="directory where the part predictions are stored")
-  parser.add_argument('--images_json', type=str,
+  parser.add_argument('images_json', type=str,
                       help="the json file with a list of images and corresponding image ids")
-  parser.add_argument('--output_dir', type=str,
+  parser.add_argument('output_dir', type=str,
                       help="directory where you wish to store the part-aware panoptic segmentation predictions")
   args = parser.parse_args()
 

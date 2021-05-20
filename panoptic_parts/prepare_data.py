@@ -9,14 +9,11 @@ from PIL import Image
 
 def create_image_list(dataset_dir, output_dir, dataset=None):
   """
+  :param dataset_dir: path to the PPS ground-truths file for the data split
+  :param output_dir: directory where the images.json file will be stored
+  :param dataset: dataset name ('Cityscapes' or 'Pascal')
 
-  Args:
-    dataset_dir: path to the PPS ground-truths file for the data split
-    output_dir: directory where the images.json file will be stored
-    dataset: dataset name ('Cityscapes' or 'Pascal')
-
-  Returns:
-
+  :return:
   """
   print("Creating images list...")
   images_list = list()
@@ -61,11 +58,11 @@ if __name__ == '__main__':
     description="Creates an images.json file for the Cityscapes Panoptic Parts or Pascal Panoptic Parts dataset."
   )
 
-  parser.add_argument('--dataset_dir', type=str,
+  parser.add_argument('dataset_dir', type=str,
                       help="path to the PPS ground-truths file for the data split")
-  parser.add_argument('--output_dir', type=str,
+  parser.add_argument('output_dir', type=str,
                       help="directory where the images.json file will be stored")
-  parser.add_argument('--dataset', type=str,
+  parser.add_argument('dataset', type=str,
                       help="dataset name ('Cityscapes' or 'Pascal')")
   args = parser.parse_args()
 
