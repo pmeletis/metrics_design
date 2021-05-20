@@ -45,13 +45,13 @@ This `images.json` follows the format also used in the [panopticapi](https://git
 
 NOTE: the `image_id` defined here, should be unique, and should be used in the names of all prediction files, as explained later.
 
-To generate the `images.json` file for Cityscapes, run the following script:
+To generate the `images.json` file for Cityscapes, run the following script from the main `panoptic_parts` directory:
 
 ```shell
-python prepare_data.py \
-    --dataset_dir=$DATASET_DIR \
-    --output_dir=$OUTPUT_DIR \
-    --dataset=$DATASET
+python -m panoptic_parts.prepare_data \
+    $DATASET_DIR \
+    $OUTPUT_DIR \
+    $DATASET
 ```
 where
 
@@ -132,15 +132,17 @@ pip install pycocotools
 pip install git+https://github.com/cocodataset/panopticapi.git
 ```
 
-To merge to panoptic, run the command below. This saves the images and JSON file with the panoptic segmentation predictions in the format [as defined here](https://cocodataset.org/#format-results).
+To merge to panoptic, run the command below. This generates the images and JSON file with the panoptic segmentation predictions in the format [as defined here](https://cocodataset.org/#format-results), and saves them in `$OUTPUT_DIR`.
+
+From the main `panoptic_parts` directory, run:
 
 ```shell
-python merge_to_panoptic.py \
-    --eval_spec_path=$EVAL_SPEC_PATH \
-    --inst_pred_path=$INST_PRED_PATH \
-    --sem_pred_path=$SEM_PRED_PATH \
-    --output_dir=$OUTPUT_DIR \
-    --images_json=$IMAGES_JSON \
+python -m panoptic_parts.merge_to_panoptic \
+    $EVAL_SPEC_PATH \
+    $INST_PRED_PATH \
+    $SEM_PRED_PATH \
+    $OUTPUT_DIR \
+    $IMAGES_JSON \
     --instseg_format=$INSTSEG_FORMAT
 
 ```
@@ -150,21 +152,23 @@ where
 - `$SEM_PRED_PATH`: path where the semantic segmentation predictions are stored
 - `$OUTPUT_DIR`: directory where you wish to store the panoptic segmentation predictions
 - `$IMAGES_JSON`: the json file with a list of images and corresponding image ids
-- `$INSTSEG_FORMAT`: instance segmentation encoding format (either 'COCO' or 'Cityscapes')
+- `$INSTSEG_FORMAT`: instance segmentation encoding format, i.e., 'COCO' or 'Cityscapes' (optional, default is 'COCO')
 
 
 ## Merge panoptic and part segmentation to PPS
 To merge panoptic segmentation and part segmentation to the Part-aware Panoptic Segmentation (PPS) format, run the code below. 
 It stores the PPS predictions as a 3-channel PNG in shape `[height x width x 3]`, where the 3 channels encode the `[scene_category_id, scene_instance_id, part_category_id]`.
 
+From the main `panoptic_parts` directory, run:
+
 ```shell
-python merge_to_pps.py \
-    --eval_spec_path=$EVAL_SPEC_PATH \
-    --panoptic_pred_dir=$PANOPTIC_PRED_DIR \
-    --panoptic_pred_json=$PANOPTIC_PRED_JSON \
-    --part_pred_path=$PART_PRED_PATH \
-    --images_json=$IMAGES_JSON \
-    --output_dir=$OUTPUT_DIR
+python -m panoptic_parts.merge_to_pps \
+    $EVAL_SPEC_PATH \
+    $PANOPTIC_PRED_DIR \
+    $PANOPTIC_PRED_JSON \
+    $PART_PRED_PATH \
+    $IMAGES_JSON \
+    $OUTPUT_DIR
 ```
 
 where
@@ -181,8 +185,10 @@ We provide a step-by-step guide for evaluating PPS results. [Click here](EVALUAT
 
 
 ## References and useful links
-- Cityscapes datset
-- Cityscapes scripts
-- COCO dataset
-- COCO API
-- Pascal VOC 2010
+- [Cityscapes dataset](https://www.cityscapes-dataset.com/)
+- [Cityscapes scripts](https://github.com/mcordts/cityscapesScripts) 
+- [COCO dataset](https://cocodataset.org/#home)
+- [COCO API](https://github.com/cocodataset/cocoapi)
+- [COCO Panoptic API](https://github.com/cocodataset/panopticapi)
+- [Pascal VOC 2010 dataset](http://host.robots.ox.ac.uk/pascal/VOC/)
+
