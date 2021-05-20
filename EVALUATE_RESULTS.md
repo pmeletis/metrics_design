@@ -44,7 +44,7 @@ The category ids in the prediction -- both for scene classes and part classes --
     * The `pid` from the `sid_pid`is the part category id that we expect in the predictions.
 
 
-Example for CPP default:
+**Example for CPP default:**
 1) As follows from `eval_sid2scene_label`:
    * The scene id for `car` is `26`, and `road` is `7`.
 2) As follows from `eval_sid_pid2eval_pid_flat` and `eval_pid_flat2scene_part_label`:
@@ -63,16 +63,24 @@ For regions where there is no prediction, or regions with `unknown` predictions,
 
 
 ## 3. Run evaluation script
+To run the evaluation script, you need to have a json file containing information on the images that you wish to evaluate on. [Here](GENERATE_RESULTS.md#dataset-information), we describe how to generate this `images.json` using `prepare_data.py`.
+
 Run the evaluation script from the top-level `panoptic_parts` directory as:
 
 ```shell
-python -m panoptic_parts.evaluation.eval_PartPQ eval_spec_path basepath_gt basepath_pred [save_dir]
+python -m panoptic_parts.evaluation.eval_PartPQ \
+    $EVAL_SPEC_PATH \
+    $GT_PATH \
+    $PRED_PATH \
+    $IMAGES_JSON \
+    --save_dir=$SAVE_DIR
 ```
 
 where:
- - `eval_spec_path`: selected evaluation specification from Step 1
- - `basepath_gt`: directory with ground truth files
- - `basepath_pred`: directory with prediction files
- - `save_dir`: optional, save the results in a json in this directory
+ - `$EVAL_SPEC_PATH`: selected evaluation specification from Step 1
+ - `$GT_PATH`: directory with ground truth files
+ - `$PRED_PATH`: directory with prediction files
+ - `$IMAGES_JSON`: the images.json file with a list of images and corresponding image ids
+ - `$SAVE_DIR`: a directory to save the json file with results (optional)
  
  For more information on the arguments run `python -m panoptic_parts.evaluation.eval_PartPQ.py -h`.
