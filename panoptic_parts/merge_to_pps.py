@@ -6,7 +6,7 @@ import argparse
 from tqdm import tqdm
 from PIL import Image
 
-from panoptic_parts.specs.merge_eval_spec import PPQEvalSpec
+from panoptic_parts.specs.merge_eval_spec import PartPQEvalSpec
 from panoptic_parts.utils.tmp_utils import get_filenames_in_dir, find_filename_in_list
 
 
@@ -79,7 +79,7 @@ def merge(eval_spec_path,
 
   :return:
   """
-  eval_spec = PPQEvalSpec(eval_spec_path)
+  eval_spec = PartPQEvalSpec(eval_spec_path)
 
   # If the output directory does not exist, create it
   if not os.path.exists(output_dir):

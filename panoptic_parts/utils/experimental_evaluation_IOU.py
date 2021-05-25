@@ -12,47 +12,11 @@ from typing import Dict, Union
 
 from panoptic_parts.utils.format import decode_uids
 from panoptic_parts.utils.utils import (
-    _print_metrics_from_confusion_matrix, _sparse_ids_mapping_to_dense_ids_mapping)
+    _print_metrics_from_confusion_matrix,
+    _sparse_ids_mapping_to_dense_ids_mapping,
+    parse__sid_pid2eid__v2)
 
 # VALIDATE_ARGS = True
-
-
-def parse__sid_pid2eid__v2(sid_pid2eid__template: Dict[Union[int, 'DEFAULT'], Union[int, 'IGNORED']]):
-  """
-  Parsing priority, sid_pid is mapped to:
-    1. sid_pid2eid__template[sid_pid] if it exists, else
-    2. sid_pid2eid__template[sid] if it exists, else
-    3. sid_pid2eid__template['DEFAULT'] value
-
-  Returns:
-    sid_pid2eval_id: a dense mapping having keys for all possible sid_pid s (0 to 99_99)
-      using the provided sparse sid_pid2eid__template and the reserved DEFAULT key and IGNORED value.
-  """
-  sp2e = sid_pid2eid__template
-  sp2e_keys = sp2e.keys()
-  sp2e_new = dict()
-  for k in range(99_99):
-
-    if k in sp2e_keys:
-      sp2e_new[k]= sp2e[k]
-      continue
-
-    sid, pid = (k, None) if k < 100 else divmod(k, 100)
-    if sid in sp2e_keys:
-      sp2e_new[k] = sp2e[sid]
-      continue
-
-    if 'DEFAULT' in sp2e_keys:
-      sp2e_new[k] = sp2e['DEFAULT']
-      continue
-
-    raise ValueError(f'sid_pid2eid__template does not follow the specification rules for key {k}.')
-
-  # replace ignored sid_pid s with the correct ignored eval_id
-  eval_id_max = max(filter(lambda v: isinstance(v, int), sp2e_new.values()))
-  sp2e_new = {k: eval_id_max + 1 if v == 'IGNORED' else v for k, v in sp2e_new.items()}
-
-  return sp2e_new
 
 
 def parse_sid_pid2eval_id(sid_pid2eval_id: Dict[int, int], max_sid: int):
