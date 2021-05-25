@@ -63,6 +63,9 @@ class DatasetSpec(object):
       - the special 'UNLABELED' class ∈ l, l_stuff, l_noparts
       - l = l_things ∪ l_stuff
       - l = l_parts ∪ l_noparts
+    - sids are continuous and zero-based
+    - iids do not need to be continuous
+    - pids are continuous and zero-based per sid
   """
   def __init__(self, spec_path):
     """
@@ -144,8 +147,8 @@ class DatasetSpec(object):
     self.sid2part_classes = {sid: part_classes
                              for sid, part_classes in enumerate(self.scene_class2part_classes.values())}
 
-    # self._sid_pid_file2sid_pid is a coarse mapping (not all 0-99_99 keys are present),  with all 
-    # possible sid_pid s in the annotation files mapped to the official sid_pid s of the dataset.
+    # self._sid_pid_file2sid_pid is a sparse mapping (not all 0-99_99 keys are present), with 
+    # sid_pid s in the annotation files mapped to the official sid_pid s of the dataset.
     # This can be used to remove the part-level instance information layer
     # from the uids in the annotation files (this only applies to PASCAL Panoptic Parts for now).
     if self._countable_pids_groupings is not None:
