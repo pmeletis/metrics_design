@@ -269,3 +269,18 @@ def _print_metrics_from_confusion_matrix(cm,
             accuracies,
             ious,
             file=printfile)
+
+
+def compare_pixelwise(l1, l2):
+  """
+  Compare numpy arrays l1, l2 with same shape and dtype in a pixel-wise manner and
+  return the unique tuples of differences corresponding to the same spatial position.
+  """
+  # assert all([isinstance(l1, np.ndarray), isinstance(l2, np.ndarray),
+  #             l1.dtype == np.dtype(int), l2.dtype == np.dtype(int),
+  #             l1.shape == l2.shape, l1.dtype == l2.dtype]), (
+  #                 f'{type(l1)}, {type(l2)}, {l1.dtype}, {l2.dtype}, {l1.shape}, {l2.shape}, {l1}, {l2}')
+  cond = l1 != l2
+  if np.any(cond):
+    uids_tuples = np.unique(np.stack([l1[cond], l2[cond]]), axis=1)
+  return uids_tuples
