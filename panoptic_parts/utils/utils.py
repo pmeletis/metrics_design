@@ -2,6 +2,7 @@ import os
 import os.path as op
 import random
 from typing import Dict, Union
+import glob
 
 import numpy as np
 from PIL import Image
@@ -67,6 +68,7 @@ def _sparse_ids_mapping_to_dense_ids_mapping(ids_dict, void, length=None, dtype=
 
   return dense_mapping
 
+
 def safe_write(path, image):
   """
   Check if `path` exist and if it doesn't creates all needed intermediate-level directories
@@ -87,6 +89,7 @@ def safe_write(path, image):
   Image.fromarray(image).save(path)
   return True
 
+
 def uids_lids2uids_cids(uids_with_lids, lids2cids):
   """
   Convert uids with semantic classes encoded as lids to uids with cids.
@@ -103,6 +106,7 @@ def uids_lids2uids_cids(uids_with_lids, lids2cids):
                lids2cids[sids] * 10**5 + uids % 10**5))
 
   return uids_with_cids
+
 
 def color_map(N=256, normalized=False):
   """ 
@@ -324,3 +328,24 @@ def parse__sid_pid2eid__v2(sid_pid2eid__template: Dict[Union[int, 'DEFAULT'], Un
 
   return sp2e_new
 
+
+def get_filenames_in_dir(directory):
+  filenames = [file for file in glob.glob(directory + "/*")]
+  filenames.extend([file for file in glob.glob(directory + "/*/*")])
+  return filenames
+
+
+def find_filename_in_list(filename, filename_list, subject='', ext=None):
+  f_found = None
+  for fs in filename_list:
+    if ext is not None:
+      if filename in fs and fs.endswith(str(ext)):
+        f_found = fs
+    else:
+      if filename in fs:
+        f_found = fs
+
+  if f_found is None:
+    raise FileNotFoundError('There is no corresponding ' + str(subject) + ' prediction file for ' + filename)
+
+  return f_found
