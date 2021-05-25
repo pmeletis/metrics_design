@@ -8,7 +8,7 @@ import yaml
 import numpy as np
 from PIL import Image
 
-from panoptic_parts.specs.merge_eval_spec import PPQEvalSpec
+from panoptic_parts.specs.merge_eval_spec import PartPQEvalSpec
 from panoptic_parts.utils.evaluation_PQ import evaluate_PartPQ_multicore
 from panoptic_parts.utils.tmp_utils import get_filenames_in_dir, find_filename_in_list
 
@@ -84,7 +84,7 @@ def evaluate(eval_spec_path, basepath_gt, basepath_pred, images_json, save_dir=N
   :return:
   """
   print('Evaluating the PPS results in {} on the PartPQ metric... (this can take a while)'.format(basepath_pred))
-  spec = PPQEvalSpec(eval_spec_path)
+  spec = PartPQEvalSpec(eval_spec_path)
 
   # dst_name = spec._dspec.dataset_name
   filepaths_pairs = filepaths_pairs_fn(basepath_gt, basepath_pred, images_json)
