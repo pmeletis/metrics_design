@@ -13,4 +13,5 @@ env.bak/
 venv.bak/
 
 .vscode
-tests
+tests/cityscapes_panoptic_parts
+tests/pascal_panoptic_parts
