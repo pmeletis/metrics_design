@@ -8,7 +8,7 @@ name: PASCAL Panoptic Parts
 # TODO(panos): move extensive documentation to specific README, keep only general documentation here.
 
 # scene_class2part_classes: An ordered mapping from scene-level class to part-level classes.
-# The mapping defines implicitly (by the order of elements) their 1-based ids, e.g.
+# The mapping defines implicitly (by the order of elements) their 1-based continuous ids, e.g.
 # "aeroplane": sid = 1, "aeroplane body": pid = 1. The 0 id is reserved for the "unlabeled" class,
 # which represents unlabeled/void/background/do-not-care pixels, and is omitted for both scene-level
 # and part-level classes, i.e. "UNLABELED": sid = 0, "aeroplane UNLABELED": pid = 0. It is expected that
