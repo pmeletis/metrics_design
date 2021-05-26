@@ -9,7 +9,7 @@ with open('ppp_20_58_iou_evalspec.yaml') as fd:
 
 dspec = DatasetSpec(gspec['dataset_spec_path'])
 
-with open('ppq_ppp_60_58_evalspec.yaml') as fd:
+with open('ppq_ppp_59_57_evalspec.yaml') as fd:
   espec = yaml.load(fd, Loader=yaml.Loader)
 
 
