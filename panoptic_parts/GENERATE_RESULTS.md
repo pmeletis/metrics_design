@@ -14,9 +14,9 @@ In the `EvalSpec`, we define the following properties
 * The category definition and numbering that we expect for the predictions.
 
 For the datasets that we define and use in our paper, we provide the `EvalSpec` that we use:
-* [ppq_cpp_20_23_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_cpp_20_23_evalspec.yaml): Cityscapes Panoptic Parts default (parts not grouped)
-* [ppq_cpp_20_9_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_cpp_20_9_evalspec.yaml): Cityscapes Panoptic Parts default (similar parts grouped)
-* [ppq_ppp_60_58_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_ppp_60_58_evalspec.yaml): PASCAL Panoptic Parts default
+* [ppq_cpp_19_23_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_cpp_19_23_evalspec.yaml): Cityscapes Panoptic Parts default (parts not grouped)
+* [ppq_cpp_19_23_grouped_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_cpp_19_23_grouped_evalspec.yaml): Cityscapes Panoptic Parts default (similar parts grouped)
+* [ppq_ppp_59_57_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_ppp_59_57_evalspec.yaml): PASCAL Panoptic Parts default
 
 
 Using these `EvalSpec` definitions, we map the label definition for the raw ground-truth to the definition that we use for evaluation.

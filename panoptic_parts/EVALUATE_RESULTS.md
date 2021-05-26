@@ -14,13 +14,13 @@ In the `EvalSpec`, we define how we wish to evaluate the dataset. Specifically, 
 
 The `EvalSpec`s have the following filename format:
 ```
-{metric-name}_{dataset-name}_{num-scene-classes}_{num-part-classes}_evalspec.yaml
+{metric-name}_{dataset-name}_{num-scene-classes}_{num-part-classes}_{specific-setting}_evalspec.yaml
 ```
 
 For the datasets that we define and use in our paper, we provide the `EvalSpec` that we use:
-* [ppq_cpp_20_23_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_cpp_20_23_evalspec.yaml): Cityscapes Panoptic Parts default (parts not grouped)
-* [ppq_cpp_20_9_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_cpp_20_9_evalspec.yaml): Cityscapes Panoptic Parts default (similar parts grouped)
-* [ppq_ppp_60_58_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_ppp_60_58_evalspec.yaml): PASCAL Panoptic Parts default
+* [ppq_cpp_19_23_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_cpp_19_23_evalspec.yaml): Cityscapes Panoptic Parts default (parts not grouped)
+* [ppq_cpp_19_23_grouped_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_cpp_19_23_grouped_evalspec.yaml): Cityscapes Panoptic Parts default (similar parts grouped)
+* [ppq_ppp_59_57_evalspec.yaml](panoptic_parts/specs/eval_specs/ppq_ppp_59_57_evalspec.yaml): PASCAL Panoptic Parts default
 
 ## 2. Prepare the predictions
 Before we can evaluate the results, you should make sure that the predictions are in the proper format. There are two things to be considered:
